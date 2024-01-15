@@ -259,8 +259,7 @@ async function getProductList(item: any) {
                   :key="index"
                   :value="index"
                   @click="showWorkDetail(item, _item)"
-                  >{{ _item.typename
-                  }}({{ _item.completed }}/{{
+                  >{{ _item.typename }}({{ _item.completed }}/{{
                     _item.totalcount
                   }})
                 </v-tab>
@@ -402,12 +401,19 @@ async function getProductList(item: any) {
                                 <div style="flex-basis: 22%">
                                   计划日期：{{ item_.planned_completion_time }}
                                 </div>
-                                <div style="flex-basis: 22%">
+                                <div style="flex-basis: 18%">
                                   工序：[{{ item_.procedure_description }}]
                                 </div>
                                 <div style="flex-basis: 10%">
                                   委外：{{
                                     item_.defaul_outsource === "N" ? "否" : "是"
+                                  }}
+                                </div>
+                                <div style="flex-basis: 12%">
+                                  人员：{{
+                                    item_.start_name === null
+                                      ? "未开始"
+                                      : item_.start_name
                                   }}
                                 </div>
                                 <div style="flex-basis: 12%">

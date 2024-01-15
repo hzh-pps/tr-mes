@@ -18,7 +18,7 @@ definePageMeta({
 //表头
 let Headers = ref<any[]>([
   {
-    title: "类型",
+    title: "进出类型",
     align: "center",
     key: "type",
     sortable: false,
