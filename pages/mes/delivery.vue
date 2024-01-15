@@ -958,7 +958,7 @@ function focusInput(inputRef: any) {
                         :key="index_"
                       >
                         <td
-                          style="text-align: center; height: 44px; width: 80px"
+                          style="text-align: center; height: 44px; width: 60px"
                         >
                           {{ index_ + (page - 1) * 10 + 1 }}
                         </td>
@@ -978,13 +978,13 @@ function focusInput(inputRef: any) {
                           style="
                             text-align: center;
                             height: 44px;
-                            width: 180px;
-                            max-width: 180px;
+                            width: 200px;
+                            max-width: 200px;
                             word-wrap: break-word;
                             white-space: normal;
                           "
                         >
-                          {{ item_.model.length > 15 ? "/" : item_.model }}
+                          {{ item_.model.length > 27 ? "/" : item_.model }}
                         </td>
                         <td
                           style="text-align: center; height: 44px; width: 80px"
@@ -1004,14 +1004,14 @@ function focusInput(inputRef: any) {
                         :key="index__"
                       >
                         <td
-                          style="text-align: center; height: 44px; width: 80px"
+                          style="text-align: center; height: 44px; width: 60px"
                         ></td>
                         <td
                           style="text-align: center; height: 44px; width: 230px"
                         ></td>
 
                         <td
-                          style="text-align: center; height: 44px; width: 180px"
+                          style="text-align: center; height: 44px; width: 200px"
                         ></td>
                         <td
                           style="text-align: center; height: 44px; width: 80px"
