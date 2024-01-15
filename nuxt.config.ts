@@ -32,6 +32,10 @@ export default defineNuxtConfig({
   //
   //
   //
+  //
+  //
+  //
+  //
   // 类型检查、严格模式是否启用
   typescript: { strict: true, typeCheck: false },
   // devtools 工具是否启用
