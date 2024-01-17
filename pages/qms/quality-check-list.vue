@@ -146,14 +146,14 @@ async function getWorkCenterData() {
 }
 //不合格原因的数据
 let items = ref([
-  "尺寸不合格",
-  "焊接不合格",
-  "打孔不合格",
-  "折弯不合格",
-  "切割不合格",
-  "打磨不合格",
-  "装配不合格",
+  "装配错误",
+  "设计不合理",
+  "外协加工错误",
+  "自制加工错误",
+  "外购件错误",
+  "其它",
 ]);
+let cause = ref<any>(null);
 //打开显示框
 function showQaInfo(item: any) {
   if (item.inspection_status !== "待质检") {
@@ -187,9 +187,16 @@ async function saveQaInfo() {
     qaInfo.value.cause_nonconformity = [];
   }
 
-  if (qaInfo.value.cause_nonconformity)
+  if (
+    qaInfo.value.cause_nonconformity &&
+    qaInfo.value.cause_nonconformity.includes("其它")
+  ) {
+    qaInfo.value.cause_nonconformity =
+      qaInfo.value.cause_nonconformity.join(",") + ":" + cause.value;
+  } else {
     qaInfo.value.cause_nonconformity =
       qaInfo.value.cause_nonconformity.join(",");
+  }
   qaInfo.value.scan_time = new Date().toISOString().substring(0, 10);
 
   await useHttp("/QaQatask/M41UpdateQaQatask", "put", qaInfo.value);
@@ -618,7 +625,17 @@ async function saveQaInfo() {
                 clearable
                 label="不合格原因"
               ></v-select>
+              <v-text-field
+                v-if="
+                  qaInfo.cause_nonconformity &&
+                  qaInfo.cause_nonconformity.includes('其它')
+                "
+                v-model="cause"
+                label="不合格原因"
+                density="compact"
+              ></v-text-field>
             </v-col>
+
             <v-col cols="12">
               <v-text-field
                 v-model="qaInfo.material_name"

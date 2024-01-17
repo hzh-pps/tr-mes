@@ -1,13 +1,13 @@
 <script setup lang="ts">
 useSeoMeta({
   // 该页面的标题
-  title: "采购收货单",
+  title: "退料单",
   // 社交媒体分享该页面时显示的标题
-  ogTitle: "采购收货单",
+  ogTitle: "退料单",
   // 该页面的描述
-  description: "同日 MES 系统，采购收货单",
+  description: "同日 MES 系统，退料单",
   // 社交媒体分享该页面时显示的描述
-  ogDescription: "同日 MES 系统，采购收货单",
+  ogDescription: "同日 MES 系统，退料单",
   // 社交媒体分享该页面时显示的图片
   ogImage: "/同日图标.png",
 });
@@ -15,45 +15,7 @@ useSeoMeta({
 definePageMeta({
   keepalive: true,
 });
-let orderHeaders = ref<any[]>([
-  {
-    title: "收货单号",
-    align: "center",
-    key: "packcode",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "项目号",
-    align: "center",
-    key: "projectcode",
-    sortable: false,
-    filterable: true,
-  },
-
-  {
-    title: "日期",
-    align: "center",
-    key: "date",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "堆",
-    align: "center",
-    key: "num",
-    sortable: false,
-    filterable: true,
-  },
-
-  {
-    title: "操作",
-    align: "center",
-    key: "action",
-    sortable: false,
-    filterable: true,
-  },
-]);
+let orderHeaders = ref<any[]>([]);
 let orderList = ref<any[]>([]);
 let selected = ref<any[]>([]);
 
@@ -75,7 +37,7 @@ function resetFilter() {
     <v-col cols="6">
       <v-card>
         <v-toolbar density="compact">
-          <v-toolbar-title class="ml-2">收货单</v-toolbar-title>
+          <v-toolbar-title class="ml-2">退料单</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
           <v-row>
@@ -148,7 +110,7 @@ function resetFilter() {
     <v-col cols="6">
       <v-card>
         <v-toolbar density="compact">
-          <v-toolbar-title class="ml-2">收货明细</v-toolbar-title>
+          <v-toolbar-title class="ml-2">退料单明细</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
           <v-row>

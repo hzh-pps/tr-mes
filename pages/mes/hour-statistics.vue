@@ -102,7 +102,11 @@ async function getHourDate() {
       end_time: searchEndTime.value,
     }
   );
-  hourList.value = data.data;
+  hourList.value = data.data.sort((a: any, b: any) => {
+    const aId = parseInt(a.record_id.substring(3));
+    const bId = parseInt(b.record_id.substring(3));
+    return bId - aId;
+  });
 }
 onMounted(() => {
   getHourDate();

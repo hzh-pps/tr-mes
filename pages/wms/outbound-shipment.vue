@@ -36,7 +36,7 @@ let orderHeaders = ref<any[]>([
     title: "出库单号",
     align: "center",
     key: "out_order_num",
-    sortable: false,
+    sortable: true,
     filterable: true,
   },
   {
@@ -275,13 +275,17 @@ async function getDate() {
       out_order_num: searchOrderNum.value,
     }
   );
-  orderList.value = data.data.map((item: any) => {
-    item.order_date = item.order_date.substring(0, 10);
-    if (!item.reserved10) {
-      item.reserved10 = null;
-    }
-    return item;
-  });
+  orderList.value = data.data
+    .map((item: any) => {
+      item.order_date = item.order_date.substring(0, 10);
+      if (!item.reserved10) {
+        item.reserved10 = null;
+      }
+      return item;
+    })
+    .sort((a: any, b: any) => {
+      return b.id - a.id;
+    });
   orderCode.value = orderList.value[0].out_order_num;
   status.value = orderList.value[0].order_status;
 }
@@ -490,7 +494,7 @@ async function delDetailSucces() {
     "delete",
     undefined,
     {
-      id: detailInfo.value.id, 
+      id: detailInfo.value.id,
     }
   );
   getDateDetail();
@@ -501,7 +505,7 @@ let inventoryList = ref<any[]>([]);
 //多选
 let selected = ref<any[]>([]);
 //获取数据库数据
-async function getInventoryData() { 
+async function getInventoryData() {
   const data: any = await useHttp("/wmsInventory/G115condition_query", "post", {
     container_id: searchCtnId.value,
     place_code: searchPlaceId.value,

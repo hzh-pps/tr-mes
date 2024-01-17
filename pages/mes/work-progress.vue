@@ -416,11 +416,16 @@ async function getProductList(item: any) {
                                       : item_.start_name
                                   }}
                                 </div>
+
                                 <div style="flex-basis: 12%">
-                                  计划数量：{{ item_.planned_quantity }}
+                                  报工数量：{{
+                                    item_.noqa_quantity === null
+                                      ? 0
+                                      : item_.noqa_quantity
+                                  }}
                                 </div>
                                 <div style="flex-basis: 12%">
-                                  报工数量：{{ item_.reported_quantity }}
+                                  合格数量：{{ item_.reported_quantity }}
                                 </div>
                                 <div
                                   style="flex-basis: 10%"
