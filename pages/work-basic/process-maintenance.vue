@@ -60,6 +60,13 @@ let tableHeaders = ref<any[]>([
     filterable: true,
   },
   {
+    title: "是否委外",
+    key: "rsv3",
+    align: "center",
+    sortable: false,
+    filterable: true,
+  },
+  {
     title: "操作",
     key: "actions",
     align: "center",
@@ -277,8 +284,8 @@ async function delProduceGroup() {
               size="large"
               @click="resetAddDialog"
               v-permission="
-              `${router.currentRoute.value.fullPath}->addProcedure`
-            "
+                `${router.currentRoute.value.fullPath}->addProcedure`
+              "
             >
               新增工序
             </v-btn>
@@ -306,8 +313,8 @@ async function delProduceGroup() {
                     editDialog = true;
                   "
                   v-permission="
-                  `${router.currentRoute.value.fullPath}->updateProcedure`
-                "
+                    `${router.currentRoute.value.fullPath}->updateProcedure`
+                  "
                 >
                   fa-solid fa-pen
                 </v-icon>
@@ -320,8 +327,8 @@ async function delProduceGroup() {
                     deleteDialog = true;
                   "
                   v-permission="
-                  `${router.currentRoute.value.fullPath}->deleteProcedure`
-                "
+                    `${router.currentRoute.value.fullPath}->deleteProcedure`
+                  "
                 >
                   fa-solid fa-trash
                 </v-icon>
@@ -370,9 +377,7 @@ async function delProduceGroup() {
               class="mr-2"
               size="large"
               @click="showAddDialog"
-              v-permission="
-              `${router.currentRoute.value.fullPath}->addGroup`
-            "
+              v-permission="`${router.currentRoute.value.fullPath}->addGroup`"
             >
               新增工序组
             </v-btn>
@@ -397,8 +402,8 @@ async function delProduceGroup() {
                     editDialog2 = true;
                   "
                   v-permission="
-                  `${router.currentRoute.value.fullPath}->updateGroup`
-                "
+                    `${router.currentRoute.value.fullPath}->updateGroup`
+                  "
                 >
                   fa-solid fa-pen
                 </v-icon>
@@ -411,8 +416,8 @@ async function delProduceGroup() {
                     deleteDialog2 = true;
                   "
                   v-permission="
-                  `${router.currentRoute.value.fullPath}->deleteGroup`
-                "
+                    `${router.currentRoute.value.fullPath}->deleteGroup`
+                  "
                 >
                   fa-solid fa-trash
                 </v-icon>
@@ -485,6 +490,11 @@ async function delProduceGroup() {
           label="是否委外"
           :items="['Y', 'N']"
           v-model="operateProcess.rsv1"
+        ></v-select>
+        <v-select
+          label="是否质检"
+          :items="['Y', 'N']"
+          v-model="operateProcess.rsv3"
         ></v-select>
       </v-card-text>
 
