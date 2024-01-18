@@ -724,7 +724,7 @@ async function openPrint() {
       <v-window v-model="showingTab">
         <v-window-item value="未派工单">
           <v-row no-gutters>
-            <v-col cols="3">
+            <v-col cols="2">
               <v-card class="rounded-lg elevation-2 ml-1">
                 <v-toolbar density="compact">
                   <v-toolbar-title
@@ -801,7 +801,7 @@ async function openPrint() {
                       <v-list-item>
                         <template v-slot:default>
                           <div class="text-body-2">
-                            计划完成日期：
+                            计划日期：
                             <span class="text-grey font-weight-medium">
                               {{ item.planned_completion_time }}
                             </span>
@@ -817,7 +817,7 @@ async function openPrint() {
               </v-card>
             </v-col>
 
-            <v-col cols="9" class="px-3">
+            <v-col cols="10" class="px-3">
               <v-card class="mb-3 elevation-2 rounded-lg">
                 <v-toolbar density="compact">
                   <v-toolbar-title
