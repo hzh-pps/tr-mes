@@ -19,6 +19,8 @@
 
 <script setup lang="ts">
 import { Chart } from "vue-chartjs";
+import { Line } from "vue-chartjs";
+import { Bar } from "vue-chartjs";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
