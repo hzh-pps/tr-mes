@@ -32,6 +32,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
+  LineController, // 注册Line控制器
 } from "chart.js";
 import { ref } from "vue";
 
@@ -45,7 +46,8 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  ChartDataLabels // 注册ChartDataLabels插件
+  ChartDataLabels, // 注册ChartDataLabels插件
+  LineController // 注册Line控制器
 );
 
 // 获取今天前七天的日期数组
