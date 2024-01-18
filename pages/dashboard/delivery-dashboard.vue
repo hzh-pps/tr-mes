@@ -1,63 +1,142 @@
 <template>
-  <v-row>
-    <v-col cols="6">
-      <Bar
-        :data="barChartData"
-        :responsive="true"
-        :maintainAspectRatio="false"
-      />
-    </v-col>
-    <v-col cols="6">
-      <Pie :data="chartData" :responsive="true" :maintainAspectRatio="false" />
-    </v-col>
-  </v-row>
+  <div
+    style="
+      height: 99%;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    "
+  >
+    <Chart
+      :type="chartData.type"
+      v-if="loaded"
+      :data="chartData"
+      :options="chartOptions"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { Pie, Bar } from "vue-chartjs";
+import { Chart } from "vue-chartjs";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
   Title,
   Tooltip,
   Legend,
-  ArcElement,
+  LineElement,
+  BarElement, // 导入BarElement
   CategoryScale,
   LinearScale,
-  PointElement, // 导入 PointElement
-  BarElement,
+  PointElement,
 } from "chart.js";
+import { ref } from "vue";
 
+// 注册所需的组件
 ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement,
+  LineElement,
+  BarElement, // 注册BarElement
   CategoryScale,
   LinearScale,
   PointElement,
-  BarElement
-); // 注册 PointElement
-// 定义饼图数据
-let chartData = ref({
-  labels: ["January", "February", "March"],
+  ChartDataLabels // 注册ChartDataLabels插件
+);
+
+// 获取今天前七天的日期数组
+const getPastSevenDays = () => {
+  const dates = [];
+  for (let i = 14; i > 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    dates.push(date.toLocaleDateString());
+  }
+  return dates;
+};
+const loaded = ref(false); // 新增一个响应式变量来控制加载状态
+// 创建图表数据
+const chartData = ref<any>({
+  type: "bar",
+  labels: getPastSevenDays(),
   datasets: [
     {
-      label: "Data One",
-      backgroundColor: ["#f87979", "#7aa6f2", "#f2a27a"],
-      data: [40, 20, 12],
+      label: "每日装箱单",
+      data: [], // 示例数据，应从API或其他数据源获取
+      fill: false,
+      borderColor: "red",
+      backgroundColor: "red",
+      tension: 0.1,
+      pointRadius: 5, // 设置顶点的大小
+      type: "line", // 设置图表类型为折线图
+    },
+    {
+      label: "每日装箱单",
+      data: [], // 示例数据，应从API或其他数据源获取
+      fill: false,
+      backgroundColor: "#8abcf9",
+      type: "bar", // 设置图表类型为柱状图
     },
   ],
 });
-// 定义柱状图数据
-let barChartData = ref({
-  labels: ["January", "February", "March"],
-  datasets: [
-    {
-      label: "Data Three",
-      backgroundColor: ["#f87979", "#7aa6f2", "#f2a27a"],
-      data: [50, 30, 20],
+
+// 创建图表选项
+const chartOptions = ref({
+  responsive: true,
+  scales: {
+    y: {
+      beginAtZero: true,
     },
-  ],
+  },
+});
+
+// 获取数据
+async function getData() {
+  const data: any = await useHttp(
+    "/PackingList/M94GetPackingList",
+    "get",
+    undefined
+  );
+  // 过滤出前两周的数据
+  const filteredData = data.data.filter((item: any) => {
+    const createTime = new Date(item.create_time);
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 14);
+    return createTime >= sevenDaysAgo && createTime < today;
+  });
+  // 使用groupDataByDate函数对数据进行分组
+  const groupedDataArray = groupDataByDate(filteredData);
+
+  // 更新图表数据
+  chartData.value.datasets[0].data = groupedDataArray;
+  // 更新图表数据
+  chartData.value.datasets[1].data = groupedDataArray;
+  // 数据加载完成后，设置loaded为true
+  loaded.value = true;
+}
+// 使用groupDataByDate函数对数据进行分组
+const groupDataByDate = (data: any[]) => {
+  const groupedData = new Map();
+
+  // 初始化前七天的日期为0
+  getPastSevenDays().forEach((date) => {
+    groupedData.set(date, 0);
+  });
+
+  // 遍历数据，按创建日期分组并计数
+  data.forEach((item) => {
+    const createDate = new Date(item.create_time).toLocaleDateString();
+    if (groupedData.has(createDate)) {
+      groupedData.set(createDate, groupedData.get(createDate) + 1);
+    }
+  });
+  // 将Map对象转换为数组
+  return Array.from(groupedData.values());
+};
+onMounted(() => {
+  getData();
 });
 </script>

@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     "/work-basic/work-class": { ssr: false },
     "/test": { ssr: false },
     "/wms/outbound-shipment": { ssr: false },
+    "/dashboard/delivery-dashboard": { ssr: false },
   },
   // 启用了哪些模块
   modules: ["@pinia/nuxt", "nuxt-lodash", "@hypernym/nuxt-gsap"],

@@ -651,22 +651,25 @@ async function getWorkDetail() {
       mdescription: searchMdescription.value,
     }
   );
-  workDetail.value = data.data.map((item: any) => {
-    item.estimated_delivery_date = item.estimated_delivery_date.substring(
-      0,
-      10
-    );
-    if (Array.isArray(item.children)) {
-      item.children = item.children.map((item_: any) => {
-        item_.planned_completion_time = item_.planned_completion_time.substring(
-          0,
-          10
-        );
-        return item_;
-      });
-    }
-    return item;
-  });
+  workDetail.value = data.data
+    .map((item: any) => {
+      item.estimated_delivery_date = item.estimated_delivery_date.substring(
+        0,
+        10
+      );
+      if (Array.isArray(item.children)) {
+        item.children = item.children.map((item_: any) => {
+          item_.planned_completion_time =
+            item_.planned_completion_time.substring(0, 10);
+
+          return item_;
+        });
+      }
+      return item;
+    })
+    .sort((a: any, b: any) => {
+      return b.id - a.id;
+    });
 }
 //搜索
 function searchWork() {
@@ -1364,19 +1367,24 @@ async function openPrint() {
                             {{ element.workorder_did }}
                           </div>
                           <!-- 产出料 -->
-                          <div style="flex-basis: 20%">
+                          <div style="flex-basis: 15%">
                             产出料：{{ element.mdescription }}
                           </div>
 
-                          <!-- 计划产出料数量 -->
-                          <div style="flex-basis: 13%">
-                            计划数量：
-                            {{ element.planned_quantity }}
+                          <!-- 创建日期 -->
+                          <div style="flex-basis: 20%">
+                            创建日期：
+                            {{ element.create_time }}
                           </div>
                           <!-- 计划交付日期 -->
                           <div style="flex-basis: 20%">
                             计划交付：
                             {{ element.estimated_delivery_date }}
+                          </div>
+                          <!-- 计划产出料数量 -->
+                          <div style="flex-basis: 13%">
+                            计划数量：
+                            {{ element.planned_quantity }}
                           </div>
                           <div>
                             图纸号：
