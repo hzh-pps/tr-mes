@@ -121,7 +121,7 @@ watch(searchTicketType, function () {
   getWorkOrder();
 });
 let searchOutputs = ref<string>("");
-let searchProduct = ref<string>("");
+let searchProduct = ref<string>("00.00.00.00");
 let searchProjectCode = ref<string>("");
 let searchName = ref("");
 let searchProject = ref("");
@@ -1090,7 +1090,7 @@ async function showProductDialog() {
     getHomeData();
     selectedRows.value = [];
     productTypeName.value = "自制件";
-    searchProduct.value = "";
+    searchProduct.value = "00.00.00.00";
     searchProjectCode.value = "";
   } catch (error) {
     console.log(error);
@@ -1191,7 +1191,7 @@ async function filterProduct() {
 //重置搜素
 function resetFilterProduct() {
   if (productTypeName.value === "自制件") {
-    searchProduct.value = "";
+    searchProduct.value = "00.00.00.00";
     searchProjectCode.value = "";
     productTablePage.value = 1;
     getHomeData();
