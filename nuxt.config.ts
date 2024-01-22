@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     "/mes/delivery": { ssr: false },
     "/mes/purchase-part": { ssr: false },
     "/work-basic/work-class": { ssr: false },
-    "/test": { ssr: false },
+    // "/test": { ssr: false },
     "/wms/outbound-shipment": { ssr: false },
     "/dashboard/delivery-dashboard": { ssr: false },
   },

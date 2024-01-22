@@ -249,10 +249,11 @@ let workCenterId = ref("");
 let workCenterName = ref("");
 
 //点击工作中心查看工作中心的任务
-function showCenterDetail(item: any) {
+async function showCenterDetail(item: any) {
   workCenterId.value = item.work_center_id;
   workCenterName.value = item.work_center_name;
-  getCenterProduce();
+  await getCenterProduce();
+  console.log(tabArr.value);
 }
 //根据工作中心编号来查找工单工序数据
 async function getCenterProduce() {
@@ -342,13 +343,7 @@ async function updateCenterId() {
 
     return a.produce_order - b.produce_order;
   });
-  // 是否打印
-  if (checkbox.value) {
-    nextTick(() => {
-      qrCodeIns.value.printQrCode();
-    });
-  }
-  tabArr1.value = [];
+
   await getWorkProduce();
   let filteredSelected = selected.value.filter(
     (selItem: any) =>
@@ -393,6 +388,13 @@ async function updateCenterId() {
   } else {
     setSnackbar("green", "您操作的工单工序数据已排产");
   }
+  // 是否打印
+  if (checkbox.value) {
+    nextTick(() => {
+      qrCodeIns.value.printQrCode();
+    });
+  }
+  tabArr1.value = [];
 }
 
 //取消添加工作中心
@@ -699,6 +701,23 @@ async function openPrint() {
   });
   selectedRow.value = [];
 }
+
+function assign() {
+  workDetailList.value = workDetailList.value.filter((item: any) => {
+    if (item.rsv4 !== null && item.rsv4 !== "") {
+      item.work_center_id = item.rsv4;
+      tabArr.value.push(item);
+      tabArr1.value.push(item);
+      // 注意：这里调用 getCenterProduce() 可能会有性能问题，因为它可能会在每次迭代中被调用。
+      // 如果这个函数调用是必要的，考虑在循环结束后调用它。
+      return false; // 不保留当前项
+    }
+    return true; // 保留当前项
+  });
+
+  // 如果 getCenterProduce() 只需要调用一次，将其移出循环
+  getCenterProduce();
+}
 </script>
 
 <template>
@@ -828,6 +847,15 @@ async function openPrint() {
                   <v-toolbar-title v-else class="text-blue font-weight-bold"
                     >未派工单</v-toolbar-title
                   >
+                  <template v-slot:append>
+                    <v-btn
+                      v-if="detailName"
+                      variant="tonal"
+                      class="text-blue"
+                      @click="assign"
+                      >智能分配</v-btn
+                    >
+                  </template>
                 </v-toolbar>
 
                 <!-- cols="10" 确定了宽度，此处的 w-100 百分比就生效了 -->
