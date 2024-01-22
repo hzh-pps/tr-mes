@@ -67,6 +67,13 @@ let tableHeaders = ref<any[]>([
     filterable: true,
   },
   {
+    title: "工作中心",
+    key: "rsv4",
+    align: "center",
+    sortable: false,
+    filterable: true,
+  },
+  {
     title: "操作",
     key: "actions",
     align: "center",
@@ -81,6 +88,7 @@ let tableData = ref<any[]>([]);
 //获取工序数据
 onMounted(() => {
   getWorkOrder();
+  getWorkCenterList();
   getProduceGroup();
 });
 //获取数据库数据
@@ -100,6 +108,22 @@ async function getWorkOrder() {
     console.log(error);
   }
 }
+// 获取工作中心数据
+let workCenterList = ref<any[]>([]);
+async function getWorkCenterList() {
+  const data = await useHttp(
+    "/WorkCenter/M13WorkCenterList",
+    "get",
+    undefined,
+    {
+      PageIndex: 1,
+      PageSize: 10000,
+      SortedBy: "id",
+      SortType: 0,
+    }
+  );
+  workCenterList.value = data.data.pageList;
+}
 // 搜索过滤
 async function filterTableData() {
   getWorkOrder();
@@ -118,12 +142,16 @@ function resetAddDialog() {
     rsv2: "",
     rsv1: "N",
     rsv3: "Y",
+    rsv4: "",
   };
   addDialog.value = true;
 }
 // 新增工序
 async function addProcess() {
   try {
+    if (!operateProcess.value.rsv4) {
+      return setSnackbar("black", "工作中心不能为空");
+    }
     const data: any = await useHttp(
       "/SysConfig/M48AddProcessBasis",
       "post",
@@ -192,6 +220,7 @@ function resetGroupFilter() {
 }
 //工序组名称
 let produceGroupInfo = ref<any>(null);
+let produceGroupCenter = ref<any>(null);
 //新增工序组
 function showAddDialog() {
   //清空内容
@@ -219,6 +248,7 @@ async function addProcessGroup() {
     rsv2: produceGroupInfo.value,
     rsv1: "N",
     rsv3: "Y",
+    rsv4: produceGroupCenter.value,
   });
   //添加成功后，清空selectedRows，更新工序组数据
   selectedRows.value = [];
@@ -454,6 +484,13 @@ async function delProduceGroup() {
           :items="['Y', 'N']"
           v-model="operateProcess.rsv3"
         ></v-select>
+        <v-select
+          label="工作中心"
+          :items="workCenterList"
+          v-model="operateProcess.rsv4"
+          item-title="work_center_name"
+          item-value="work_center_id"
+        ></v-select>
       </v-card-text>
 
       <div class="d-flex justify-end mr-6 mb-4">
@@ -495,6 +532,13 @@ async function delProduceGroup() {
           label="是否质检"
           :items="['Y', 'N']"
           v-model="operateProcess.rsv3"
+        ></v-select>
+        <v-select
+          label="工作中心"
+          :items="workCenterList"
+          v-model="operateProcess.rsv4"
+          item-title="work_center_name"
+          item-value="work_center_id"
         ></v-select>
       </v-card-text>
 
@@ -556,6 +600,14 @@ async function delProduceGroup() {
 
       <v-card-text class="mt-4">
         您确定要新增工序组【{{ produceGroupInfo }}】 ？
+        <v-select
+          label="工作中心"
+          :items="workCenterList"
+          v-model="produceGroupCenter"
+          item-title="work_center_name"
+          item-value="work_center_id"
+          class="mt-5"
+        ></v-select>
       </v-card-text>
 
       <div class="d-flex justify-end mr-6 mb-4">
@@ -588,6 +640,13 @@ async function delProduceGroup() {
           v-model="produceGroupItem.rsv2"
           label="工序组名称"
         ></v-text-field>
+        <v-select
+          label="工作中心"
+          :items="produceGroupItem.rsv4"
+          v-model="produceGroupCenter"
+          item-title="work_center_name"
+          item-value="work_center_id"
+        ></v-select>
       </v-card-text>
 
       <div class="d-flex justify-end mr-6 mb-4">
