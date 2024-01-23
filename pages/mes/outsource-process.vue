@@ -29,6 +29,144 @@ let delHeaderDialog = ref<boolean>(false);
 let addShowDialog = ref<boolean>(false);
 let banDialog = ref<boolean>(false);
 let stepDialog = ref<boolean>(false);
+
+let searchOutsourced = ref<any>();
+let searchSupplier = ref<any>("");
+let headerList = ref<any[]>([
+  {
+    title: "委外单号",
+    align: "center",
+    key: "outsourced_head_code",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "供应商",
+    align: "center",
+    key: "supplier_name",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "重量",
+    align: "center",
+    key: "total_weight",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "委外开始日期",
+    align: "center",
+    key: "outsourced_start_date",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "状态",
+    align: "center",
+    key: "outsourced_status",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "操作",
+    align: "center",
+    key: "action",
+    sortable: false,
+    filterable: true,
+  },
+]);
+// 表头数据
+let headerOrderList = ref<any[]>([]);
+
+// 获取数据库数据
+async function getOrderData() {
+  const data: any = await useHttp(
+    "/QaOrderHead/M111GetQaOrderHead",
+    "get",
+    undefined,
+    {
+      outsourced_head_code: searchOutsourced.value,
+      supplier_name: searchSupplier.value,
+    }
+  );
+  headerOrderList.value = data.data.map((item: any) => {
+    item.outsourced_start_date = item.outsourced_start_date.substring(0, 10);
+    return item;
+  });
+  code.value = headerOrderList.value[0].outsourced_head_code;
+}
+//搜索
+function filter1() {
+  getOrderData();
+}
+// 重置搜素
+function resetFilter1() {
+  searchOutsourced.value = "";
+  searchSupplier.value = "";
+  getOrderData();
+}
+let headerInfo = ref<any>(null);
+// 新增表头
+function showAddHeader() {
+  headerInfo.value = {
+    supplier_name: "",
+    total_weight: "",
+    outsourced_start_date: new Date(),
+    outsourced_status: "发出",
+  };
+  addHeaderDialog.value = true;
+}
+async function addSuccess() {
+  const data: any = await useHttp(
+    "/QaOrderHead/M112AddQaOrderHead",
+    "post",
+    headerInfo.value
+  );
+  addHeaderDialog.value = false;
+  getOrderData();
+}
+// 表头修改
+function showEditHeader(item: any) {
+  headerInfo.value = { ...item };
+  editHeaderDialog.value = true;
+}
+async function editHeader() {
+  const data: any = await useHttp(
+    "/QaOrderHead/M113UpdateQaOrderHead",
+    "put",
+    headerInfo.value
+  );
+  editHeaderDialog.value = false;
+  getOrderData();
+}
+// 表头删除
+function showDelHeader(item: any) {
+  headerInfo.value = { ...item };
+  delHeaderDialog.value = true;
+}
+async function delHeader() {
+  const data: any = await useHttp(
+    "/QaOrderHead/M114DeleteQaOrderHead",
+    "delete",
+    undefined,
+    {
+      ids: headerInfo.value.id,
+    }
+  );
+  delHeaderDialog.value = false;
+  getOrderData();
+}
+
+let code = ref<any>(null);
+//点击获取当前表头下的明细
+function showDetail(item: any, obj: any) {
+  code.value = obj.item.raw.outsourced_head_code;
+}
+watch(code, function () {
+  getOutSourceData();
+});
+// 明细数据
 let headers = ref<any[]>([
   {
     title: "派工单号",
@@ -87,13 +225,7 @@ let headers = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-  {
-    title: "委外开始日期",
-    align: "center",
-    key: "outsourced_start_date",
-    sortable: false,
-    filterable: true,
-  },
+
   {
     title: "委外完成日期",
     align: "center",
@@ -123,33 +255,8 @@ let headers = ref<any[]>([
     filterable: true,
   },
 ]);
-let headerList = ref<any[]>([
-  {
-    title: "派工单号",
-    align: "center",
-    key: "dispatch_order",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "委外类型",
-    align: "center",
-    key: "procedure_description",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "操作",
-    align: "center",
-    key: "action",
-    sortable: false,
-    filterable: true,
-  },
-]);
-
 let outSourceList = ref<any[]>([]);
 //搜索字段
-let searchSupplier = ref<any>("");
 let searchName = ref<any>("");
 let searchDispatch = ref<any>("");
 let searchStatus = ref<any>("");
@@ -162,6 +269,7 @@ let searchEndDate = endDate.toISOString().substring(0, 10);
 //获取数据库数据
 async function getOutSourceData() {
   const data: any = await useHttp("/QaOrder/M81GetQaOrder", "get", undefined, {
+    outsourced_head_code: code.value,
     supplier_id: searchSupplier.value,
     material_name: searchName.value,
     dispatch_order: searchDispatch.value,
@@ -194,7 +302,7 @@ async function getOutSourceData() {
     });
 }
 onMounted(() => {
-  getOutSourceData();
+  getOrderData();
 });
 //查询
 function filter() {
@@ -202,7 +310,6 @@ function filter() {
 }
 //重置查询
 function resetFilter() {
-  searchSupplier.value = "";
   searchStatus.value = "";
   searchName.value = "";
   searchDispatch.value = "";
@@ -342,7 +449,7 @@ function addInfo() {
   tabArr1.value = [];
   selectedRows.value.forEach((item: any) => {
     tabArr.value.push({
-      supplier_id: "",
+      outsourced_head_code: code.value,
       procedure_id: item.procedure_id,
       workorder_hid: item.workorder_hid,
       workorder_did: item.workorder_did,
@@ -399,7 +506,9 @@ let banInfo = ref<any>(null);
 // 取消委外
 function showBan(item: any) {
   outSourceInfo.value = { ...item };
+
   banInfo.value = {
+    outsourced_head_code: item.outsourced_head_code,
     dispatch_order: item.dispatch_order,
     employee_id: "18",
     employee_name: name,
@@ -498,21 +607,21 @@ async function stepSuccess() {
               color="blue-darken-2"
               class="mr-2 mt-2"
               size="default"
-              @click="filter"
+              @click="filter1"
               >查询</v-btn
             >
             <v-btn
               color="red"
               class="mr-2 mt-2"
               size="default"
-              @click="resetFilter"
+              @click="resetFilter1"
               >重置查询</v-btn
             >
             <v-btn
               color="blue-darken-2"
               class="mr-2 mt-2"
               size="default"
-              @click="showAdd"
+              @click="showAddHeader"
             >
               新增委外
             </v-btn>
@@ -521,13 +630,14 @@ async function stepSuccess() {
             <v-data-table
               hover
               :items-per-page="10"
-              :headers="headers"
-              :items="outSourceList"
+              :headers="headerList"
+              :items="headerOrderList"
               style="overflow-x: auto; white-space: nowrap"
               fixed-footer
               fixed-header
               height="610"
               no-data-text="没有找到符合的数据"
+              @click:row="showDetail"
             >
               <template v-slot:item.action="{ item }">
                 <!-- 修改 -->
@@ -535,27 +645,17 @@ async function stepSuccess() {
                   color="blue"
                   size="small"
                   class="mr-3"
-                  v-if="item.raw.outsourced_status === '发出'"
-                  @click="showEdit(item.raw)"
+                  @click="showEditHeader(item.raw)"
                 >
                   fa-solid fa-pen
                 </v-icon>
-                <!-- 禁用 -->
+                <!-- 删除 -->
                 <v-icon
                   color="red"
                   size="small"
-                  @click="showBan(item.raw)"
-                  v-if="item.raw.outsourced_status === '发出'"
+                  @click="showDelHeader(item.raw)"
                 >
-                  fa-solid fa-ban
-                </v-icon>
-                <v-icon
-                  color="blue"
-                  size="small"
-                  @click="showStep(item.raw)"
-                  v-if="item.raw.outsourced_status === '异常暂停'"
-                >
-                  fa-solid fa-backward-step
+                  fa-solid fa-trash
                 </v-icon>
               </template>
             </v-data-table>
@@ -565,7 +665,10 @@ async function stepSuccess() {
     </v-col>
     <v-col cols="7">
       <v-card class="h-100">
-        <v-toolbar class="text-h6 pl-6">登记明细</v-toolbar>
+        <v-toolbar class="text-h6 pl-6" v-if="code"
+          >【{{ code }}】登记明细</v-toolbar
+        >
+        <v-toolbar class="text-h6 pl-6" v-else>登记明细</v-toolbar>
         <v-row class="ma-1">
           <v-col cols="3">
             <v-text-field
@@ -630,6 +733,7 @@ async function stepSuccess() {
               class="mr-2 mt-2"
               size="default"
               @click="showAdd"
+              v-if="code"
             >
               新增明细
             </v-btn>
@@ -680,6 +784,144 @@ async function stepSuccess() {
         </v-row>
       </v-card>
     </v-col>
+
+    <!-- 新增委外头 -->
+    <v-dialog v-model="addHeaderDialog" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 新增委外工序 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="addHeaderDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                label="供应商"
+                v-model="headerInfo.supplier_name"
+                clearable
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                label="重量"
+                v-model="headerInfo.total_weight"
+                clearable
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                label="开始时间"
+                v-model="headerInfo.outsourced_start_date"
+                clearable
+                hide-details
+                type="date"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="addSuccess"
+          >
+            确认
+          </v-btn>
+          <v-btn color="grey" size="large" @click="addHeaderDialog = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+    <!-- 修改委外头 -->
+    <v-dialog v-model="editHeaderDialog" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 修改委外表头 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="editHeaderDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                label="供应商"
+                v-model="headerInfo.supplier_name"
+                clearable
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                label="重量"
+                v-model="headerInfo.total_weight"
+                clearable
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field
+                label="开始时间"
+                v-model="headerInfo.outsourced_start_date"
+                clearable
+                hide-details
+                type="date"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="editHeader"
+          >
+            确认
+          </v-btn>
+          <v-btn color="grey" size="large" @click="editHeaderDialog = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
+    <!-- 删除委外工序 -->
+    <v-dialog v-model="delHeaderDialog" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 删除委外登记 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="delHeaderDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="text-center">
+          您确定要删除这条委外工序吗?
+        </v-card-text>
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="delHeader()"
+          >
+            确认
+          </v-btn>
+          <v-btn color="grey" size="large" @click="delHeaderDialog = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
 
     <!-- 新增委外工序 -->
     <v-dialog v-model="addDialog" min-width="1400px" width="560px">
@@ -786,14 +1028,6 @@ async function stepSuccess() {
           <v-row>
             <v-col cols="12">
               <v-text-field
-                label="供应商"
-                v-model="outSourceInfo.supplier_id"
-                clearable
-                hide-details
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12">
-              <v-text-field
                 label="说明验收标准"
                 v-model="outSourceInfo.acceptance_criteria"
                 clearable
@@ -897,11 +1131,11 @@ async function stepSuccess() {
             </v-col>
             <v-col cols="2">
               <v-text-field
-                label="供应商"
+                label="物料编码"
                 variant="outlined"
                 density="compact"
                 autofocus
-                v-model="item.supplier_id"
+                v-model="item.material_id"
                 hide-details
               ></v-text-field>
             </v-col>
@@ -927,17 +1161,17 @@ async function stepSuccess() {
             </v-col>
             <v-col cols="2">
               <v-text-field
-                label="重量"
+                label="工序"
                 autofocus
                 variant="outlined"
                 density="compact"
-                v-model="item.material_weight"
+                v-model="item.procedure_description"
                 hide-details
               ></v-text-field>
             </v-col>
             <v-col cols="2">
               <v-text-field
-                label="日期"
+                label="委外日期"
                 type="date"
                 autofocus
                 variant="outlined"
@@ -1029,3 +1263,10 @@ async function stepSuccess() {
     </template>
   </v-snackbar>
 </template>
+<style scoped>
+.custom-header-class {
+  background-color: #f9f9f9;
+  color: #666;
+  /* 更多自定义样式 */
+}
+</style>
