@@ -18,7 +18,7 @@ definePageMeta({
 let headers = ref<any[]>([
   {
     title: "项目号",
-    align: "true",
+    align: "center",
     key: "project_code",
     sortable: false,
     filterable: true,
