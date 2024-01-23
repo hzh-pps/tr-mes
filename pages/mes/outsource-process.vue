@@ -22,6 +22,9 @@ const { snackbarShow, snackbarColor, snackbarText, setSnackbar } =
 let editDialog = ref<boolean>(false);
 let addDialog = ref<boolean>(false);
 let delDialog = ref<boolean>(false);
+let editHeaderDialog = ref<boolean>(false);
+let addHeaderDialog = ref<boolean>(false);
+let delHeaderDialog = ref<boolean>(false);
 
 let addShowDialog = ref<boolean>(false);
 let banDialog = ref<boolean>(false);
@@ -38,13 +41,6 @@ let headers = ref<any[]>([
     title: "委外类型",
     align: "center",
     key: "procedure_description",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "供应商",
-    align: "center",
-    key: "supplier_id",
     sortable: false,
     filterable: true,
   },
@@ -71,13 +67,6 @@ let headers = ref<any[]>([
   },
 
   {
-    title: "重量",
-    align: "center",
-    key: "material_weight",
-    sortable: false,
-    filterable: true,
-  },
-  {
     title: "委外数量",
     align: "center",
     key: "outsourced_quantity",
@@ -87,11 +76,10 @@ let headers = ref<any[]>([
   {
     title: "接受数量",
     align: "center",
-    key: "received_quantity",
+    key: "reported_quantity",
     sortable: false,
     filterable: true,
   },
-
   {
     title: "单位",
     align: "center",
@@ -124,6 +112,29 @@ let headers = ref<any[]>([
     title: "委外状态",
     align: "center",
     key: "outsourced_status",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "操作",
+    align: "center",
+    key: "action",
+    sortable: false,
+    filterable: true,
+  },
+]);
+let headerList = ref<any[]>([
+  {
+    title: "派工单号",
+    align: "center",
+    key: "dispatch_order",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "委外类型",
+    align: "center",
+    key: "procedure_description",
     sortable: false,
     filterable: true,
   },
@@ -367,37 +378,23 @@ function addInfo() {
   addShowDialog.value = true;
 }
 async function addDetailSucces() {
-  let isInvalid = false; // 添加一个标志变量来跟踪是否有不合法的数据
+  const data: any = await useHttp(
+    "/QaOrder/M82AddQaOrder",
+    "post",
+    tabArr.value
+  );
 
-  for (const item of tabArr.value) {
-    if (
-      item.procedure_description === "表面处理" &&
-      item.material_weight === 0
-    ) {
-      isInvalid = true; // 设置标志为true表示找到了不合法的数据
-      break; // 跳出循环
-    }
-  }
-  if (isInvalid) {
-    return setSnackbar("red", "表面处理的工单需要重量");
-  } else {
-    const data: any = await useHttp(
-      "/QaOrder/M82AddQaOrder",
-      "post",
-      tabArr.value
-    );
+  await useHttp(
+    "/MesProcessScanRecord/M86AddProcessScanRecordList",
+    "post",
+    tabArr1.value
+  );
 
-    await useHttp(
-      "/MesProcessScanRecord/M86AddProcessScanRecordList",
-      "post",
-      tabArr1.value
-    );
-
-    getOutSourceData();
-    addShowDialog.value = false;
-    addDialog.value = false;
-  }
+  getOutSourceData();
+  addShowDialog.value = false;
+  addDialog.value = false;
 }
+
 let banInfo = ref<any>(null);
 // 取消委外
 function showBan(item: any) {
@@ -471,131 +468,219 @@ async function stepSuccess() {
 </script>
 <template>
   <v-row class="ma-2">
-    <v-col cols="2">
-      <v-text-field
-        label="供应商"
-        v-model="searchSupplier"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
+    <v-col cols="5">
+      <v-card class="h-100">
+        <v-toolbar class="text-h6 pl-6">委外登记</v-toolbar>
+        <v-row class="ma-1">
+          <v-col cols="6">
+            <v-text-field
+              label="供应商"
+              v-model="searchSupplier"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              label="委外单号"
+              v-model="searchSupplier"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="12">
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="filter"
+              >查询</v-btn
+            >
+            <v-btn
+              color="red"
+              class="mr-2 mt-2"
+              size="default"
+              @click="resetFilter"
+              >重置查询</v-btn
+            >
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="showAdd"
+            >
+              新增委外
+            </v-btn>
+          </v-col>
+          <v-col cols="12">
+            <v-data-table
+              hover
+              :items-per-page="10"
+              :headers="headers"
+              :items="outSourceList"
+              style="overflow-x: auto; white-space: nowrap"
+              fixed-footer
+              fixed-header
+              height="610"
+              no-data-text="没有找到符合的数据"
+            >
+              <template v-slot:item.action="{ item }">
+                <!-- 修改 -->
+                <v-icon
+                  color="blue"
+                  size="small"
+                  class="mr-3"
+                  v-if="item.raw.outsourced_status === '发出'"
+                  @click="showEdit(item.raw)"
+                >
+                  fa-solid fa-pen
+                </v-icon>
+                <!-- 禁用 -->
+                <v-icon
+                  color="red"
+                  size="small"
+                  @click="showBan(item.raw)"
+                  v-if="item.raw.outsourced_status === '发出'"
+                >
+                  fa-solid fa-ban
+                </v-icon>
+                <v-icon
+                  color="blue"
+                  size="small"
+                  @click="showStep(item.raw)"
+                  v-if="item.raw.outsourced_status === '异常暂停'"
+                >
+                  fa-solid fa-backward-step
+                </v-icon>
+              </template>
+            </v-data-table>
+          </v-col>
+        </v-row>
+      </v-card>
     </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="委外物料"
-        v-model="searchName"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
+    <v-col cols="7">
+      <v-card class="h-100">
+        <v-toolbar class="text-h6 pl-6">登记明细</v-toolbar>
+        <v-row class="ma-1">
+          <v-col cols="3">
+            <v-text-field
+              label="委外物料"
+              v-model="searchName"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="3">
+            <v-text-field
+              label="派工单号"
+              v-model="searchDispatch"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="3">
+            <v-text-field
+              label="最早开始日期"
+              v-model="searchStartDate"
+              type="date"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="3">
+            <v-text-field
+              label="最晚开始日期"
+              type="date"
+              v-model="searchEndDate"
+              variant="outlined"
+              density="compact"
+              hide-details
+              class="mt-2"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12">
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="filter"
+              >查询</v-btn
+            >
+            <v-btn
+              color="red"
+              class="mr-2 mt-2"
+              size="default"
+              @click="resetFilter"
+              >重置查询</v-btn
+            >
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="showAdd"
+            >
+              新增明细
+            </v-btn>
+          </v-col>
+          <v-col cols="12">
+            <v-data-table
+              hover
+              :items-per-page="10"
+              :headers="headers"
+              :items="outSourceList"
+              style="overflow-x: auto; white-space: nowrap"
+              fixed-footer
+              fixed-header
+              height="610"
+              no-data-text="没有找到符合的数据"
+            >
+              <template v-slot:item.action="{ item }">
+                <!-- 修改 -->
+                <v-icon
+                  color="blue"
+                  size="small"
+                  class="mr-3"
+                  v-if="item.raw.outsourced_status === '发出'"
+                  @click="showEdit(item.raw)"
+                >
+                  fa-solid fa-pen
+                </v-icon>
+                <!-- 禁用 -->
+                <v-icon
+                  color="red"
+                  size="small"
+                  @click="showBan(item.raw)"
+                  v-if="item.raw.outsourced_status === '发出'"
+                >
+                  fa-solid fa-ban
+                </v-icon>
+                <v-icon
+                  color="blue"
+                  size="small"
+                  @click="showStep(item.raw)"
+                  v-if="item.raw.outsourced_status === '异常暂停'"
+                >
+                  fa-solid fa-backward-step
+                </v-icon>
+              </template>
+            </v-data-table>
+          </v-col>
+        </v-row>
+      </v-card>
     </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="派工单号"
-        v-model="searchDispatch"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="状态"
-        v-model="searchStatus"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="最早开始日期"
-        v-model="searchStartDate"
-        type="date"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="最晚开始日期"
-        type="date"
-        v-model="searchEndDate"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="12">
-      <v-btn
-        color="blue-darken-2"
-        class="mr-2 mt-2"
-        size="default"
-        @click="filter"
-        >查询</v-btn
-      >
-      <v-btn color="red" class="mr-2 mt-2" size="default" @click="resetFilter"
-        >重置查询</v-btn
-      >
-      <v-btn
-        color="blue-darken-2"
-        class="mr-2 mt-2"
-        size="default"
-        @click="showAdd"
-      >
-        新增委外
-      </v-btn>
-    </v-col>
-    <v-col cols="12">
-      <v-data-table
-        hover
-        :items-per-page="10"
-        :headers="headers"
-        :items="outSourceList"
-        style="overflow-x: auto; white-space: nowrap"
-        fixed-footer
-        fixed-header
-        height="610"
-        no-data-text="没有找到符合的数据"
-      >
-        <template v-slot:item.action="{ item }">
-          <!-- 修改 -->
-          <v-icon
-            color="blue"
-            size="small"
-            class="mr-3"
-            v-if="item.raw.outsourced_status === '发出'"
-            @click="showEdit(item.raw)"
-          >
-            fa-solid fa-pen
-          </v-icon>
-          <!-- 禁用 -->
-          <v-icon
-            color="red"
-            size="small"
-            @click="showBan(item.raw)"
-            v-if="item.raw.outsourced_status === '发出'"
-          >
-            fa-solid fa-ban
-          </v-icon>
-          <v-icon
-            color="blue"
-            size="small"
-            @click="showStep(item.raw)"
-            v-if="item.raw.outsourced_status === '异常暂停'"
-          >
-            fa-solid fa-backward-step
-          </v-icon>
-        </template>
-      </v-data-table>
-    </v-col>
+
     <!-- 新增委外工序 -->
     <v-dialog v-model="addDialog" min-width="1400px" width="560px">
       <v-card>
