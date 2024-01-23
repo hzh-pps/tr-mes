@@ -1418,7 +1418,7 @@ const handleDrop2 = (e: DragEvent) => {
       const sheetName = "加工件清单"; // 这里替换成你的实际Sheet名称
       const worksheet = workbook.Sheets[sheetName];
       if (worksheet) {
-        jsonData.value = [XLSX.utils.sheet_to_json(worksheet)[3]];
+        jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(3);
         jsonData.value.forEach((item: any) => {
           workOrderData.value.push({
             product_id: item.__EMPTY,

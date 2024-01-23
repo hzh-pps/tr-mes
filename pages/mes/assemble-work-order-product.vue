@@ -1157,7 +1157,7 @@ async function addDetailSucces2() {
     setSnackbar("green", "导入成功");
     addDetailDialog3.value = false;
     importDialog.value = false;
-    getWorkOrderDetail();
+    getWorkOrder();
     getWorkOrder();
   }
   console.log(workOrderData.value);
