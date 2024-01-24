@@ -1,6 +1,17 @@
 <template>
-  <div class="drop-area" @dragover.prevent @drop="handleDrop">
-    将Excel文件拖放到这里
+  <div
+    class="drop-area"
+    @dragover.prevent
+    @drop="handleDrop"
+    @click="triggerFileInput"
+  >
+    将Excel文件拖放到这里或点击选择文件
+    <input
+      type="file"
+      ref="fileInput"
+      style="display: none"
+      @change="handleFileChosen"
+    />
   </div>
   <!-- 检查新建明细 -->
   <v-dialog v-model="addDetailDialog" min-width="1400px" width="560px">
@@ -87,8 +98,63 @@
 
 <script setup lang="ts">
 import * as XLSX from "xlsx";
+
+// 点击选择文件完成数据导入
+const fileInput = ref<HTMLInputElement | null>(null);
+function triggerFileInput() {
+  fileInput.value?.click();
+}
+// 处理文件选择
+function handleFileChosen(event: any) {
+  const files = (event.target as HTMLInputElement).files;
+  if (files && files[0]) {
+    processFile(files[0]);
+  }
+}
+// 处理文件
+function processFile(file: File) {
+  const reader = new FileReader();
+  reader.onload = (e: any) => {
+    const data = e.target.result;
+    const workbook = XLSX.read(data, { type: "binary" });
+    // 假设你想根据Sheet的名称来获取数据
+    const sheetName = "加工件清单"; // 这里替换成你的实际Sheet名称
+    const worksheet = workbook.Sheets[sheetName];
+    if (worksheet) {
+      jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(3);
+      jsonData.value.forEach((item: any) => {
+        workOrderData.value.push({
+          product_id: item.__EMPTY,
+          product_description: item.__EMPTY_1,
+          planned_quantity: item.__EMPTY_7,
+          unit: item.__EMPTY_8,
+          start_date: new Date().toISOString().slice(0, 10),
+          finish_date: null,
+          work_hour: 0,
+          status: "",
+          planned_completion_time: new Date().toISOString().slice(0, 10),
+          scheduled_start_date: new Date().toISOString().slice(0, 10),
+          approve_date: null,
+          blueprint_id: null,
+          procedure: "",
+          reported_quantity: 0,
+          workorder_type: "机加",
+          project_code: item.__EMPTY.slice(-9),
+        });
+      });
+      console.log(workOrderData.value); // 这里是你指定Sheet名称的数据
+    } else {
+      console.error(`Sheet名为"${sheetName}"的Sheet不存在。`);
+    }
+  };
+  reader.readAsBinaryString(file);
+  addDetailDialog.value = true;
+}
+
+// 拖拽完成数据导入
 let addDetailDialog = ref<boolean>(false);
 let jsonData = ref<any[]>([]);
+
 // 工单数据
 let workOrderData = ref<any[]>([]);
 const handleDrop = (e: DragEvent) => {
