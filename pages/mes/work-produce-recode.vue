@@ -253,7 +253,6 @@ async function showCenterDetail(item: any) {
   workCenterId.value = item.work_center_id;
   workCenterName.value = item.work_center_name;
   await getCenterProduce();
-  console.log(tabArr.value);
 }
 //根据工作中心编号来查找工单工序数据
 async function getCenterProduce() {
@@ -306,6 +305,7 @@ async function updateCenterId() {
     "put",
     tabArr1.value
   );
+
   tabArr1.value = data.data.map((item: any) => {
     item.planned_completion_time = item.planned_completion_time.substring(
       0,
@@ -574,7 +574,7 @@ async function getDeliverList() {
       material_name: searchName.value,
       dispatch_order: searchDO.value,
       PageIndex: 1,
-      PageSize: 10000,
+      PageSize: 999999,
       SortType: 1,
       SortedBy: "dispatch_order",
       status: "已排产待执行,已执行在生产",
@@ -706,6 +706,7 @@ function assign() {
   workDetailList.value = workDetailList.value.filter((item: any) => {
     if (item.rsv4 !== null && item.rsv4 !== "") {
       item.work_center_id = item.rsv4;
+      item.assignment_date = new Date().toISOString().split("T")[0];
       tabArr.value.push(item);
       tabArr1.value.push(item);
       // 注意：这里调用 getCenterProduce() 可能会有性能问题，因为它可能会在每次迭代中被调用。
