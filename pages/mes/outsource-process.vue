@@ -115,8 +115,8 @@ let headerInfo = ref<any>(null);
 function showAddHeader() {
   headerInfo.value = {
     supplier_name: "",
-    total_weight: "",
-    outsourced_start_date: new Date(),
+    total_weight: 0,
+    outsourced_start_date: new Date().toISOString().substring(0, 10),
     outsourced_status: "发出",
   };
   addHeaderDialog.value = true;
