@@ -90,10 +90,14 @@ async function getOrderData() {
       supplier_name: searchSupplier.value,
     }
   );
-  headerOrderList.value = data.data.map((item: any) => {
-    item.outsourced_start_date = item.outsourced_start_date.substring(0, 10);
-    return item;
-  });
+  headerOrderList.value = data.data
+    .map((item: any) => {
+      item.outsourced_start_date = item.outsourced_start_date.substring(0, 10);
+      return item;
+    })
+    .sort((a: any, b: any) => {
+      return b.id - a.id;
+    });
   code.value = headerOrderList.value[0].outsourced_head_code;
 }
 //搜索
