@@ -1372,7 +1372,7 @@ function processFile(file: File) {
           blueprint_id: null,
           procedure: "",
           reported_quantity: 0,
-          workorder_type: "机加",
+          workorder_type: "钣金",
           project_code: item.__EMPTY.slice(-9),
         });
       });
@@ -1484,7 +1484,7 @@ const handleDrop = (e: DragEvent) => {
             blueprint_id: null,
             procedure: "",
             reported_quantity: 0,
-            workorder_type: "机加",
+            workorder_type: "钣金",
             project_code: item.__EMPTY.slice(-9),
           });
         });
