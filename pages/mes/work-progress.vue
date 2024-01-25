@@ -31,14 +31,13 @@ let startDate = ref<any>(null);
 let endDate = ref<any>(null);
 onMounted(() => {
   startDate.value = nowDate.toISOString().substring(0, 10);
-
   endDate.value = oldDate.toISOString().substring(0, 10);
   getProjectCode();
 });
 //项目号搜素
 let projectCode = ref<any>(null);
 watch(projectCode, function () {
-  getProjectCode();
+  filter();
 });
 //获取项目号
 let projectCodeList = ref<any[]>([]);
@@ -53,11 +52,23 @@ async function getProjectCode() {
       end_time: endDate.value,
     }
   );
-  projectCodeList.value = data.data;
+  projectCodeList.value = data.data.filter((item: any) => {
+    return item.isfinish === 0;
+  });
 }
 //搜索项目号
-function filter() {
-  getProjectCode();
+async function filter() {
+  const data: any = await useHttp(
+    "/MesWorkOrderDetail/M75GetProjectCode",
+    "get",
+    undefined,
+    {
+      code: projectCode.value,
+      start_time: startDate.value,
+      end_time: endDate.value,
+    }
+  );
+  projectCodeList.value = data.data;
 }
 //重置搜索
 function resetFilter() {
@@ -229,8 +240,8 @@ async function getProductList(item: any) {
             v-for="(item, index) in projectCodeList"
             :key="index"
             :value="index"
-            @click="showProgress(item)"
-            >{{ item }}
+            @click="showProgress(item.code)"
+            >{{ item.code }}
           </v-tab>
         </v-tabs>
       </v-card>
@@ -258,7 +269,7 @@ async function getProductList(item: any) {
                   v-for="(_item, index) in workTypeList"
                   :key="index"
                   :value="index"
-                  @click="showWorkDetail(item, _item)"
+                  @click="showWorkDetail(item.code, _item)"
                   >{{ _item.typename }}({{ _item.completed }}/{{
                     _item.totalcount
                   }})
