@@ -60,7 +60,7 @@ let tableHeaders = ref<any[]>([
     filterable: true,
   },
   {
-    title: "是否委外",
+    title: "是否质检",
     key: "rsv3",
     align: "center",
     sortable: false,
