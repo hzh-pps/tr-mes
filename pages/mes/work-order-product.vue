@@ -1394,18 +1394,20 @@ function processFile2(file: File) {
     const data = e.target.result;
     const workbook = XLSX.read(data, { type: "binary" });
     // 假设你想根据Sheet的名称来获取数据
-    const sheetName = "加工件清单"; // 这里替换成你的实际Sheet名称
+    const sheetName = "Sheet1"; // 这里替换成你的实际Sheet名称
     const worksheet = workbook.Sheets[sheetName];
     if (worksheet) {
-      jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(3);
+      jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(1, -1);
+      // 复制第一条数据并插入到数组的第一个索引位置
+      jsonData.value.splice(1, 0, jsonData.value[0]);
       jsonData.value.forEach((item: any) => {
         workOrderData.value.push({
-          product_id: item.__EMPTY,
-          mcode: item.__EMPTY,
-          product_description: item.__EMPTY_1,
-          mdescription: item.__EMPTY_1,
-          planned_quantity: item.__EMPTY_7,
-          unit: item.__EMPTY_8,
+          product_id: item.__EMPTY_4,
+          mcode: item.__EMPTY_4,
+          product_description: item.__EMPTY_5,
+          mdescription: item.__EMPTY_5,
+          planned_quantity: item.__EMPTY_6,
+          unit: item.__EMPTY_7,
           start_date: new Date().toISOString().slice(0, 10),
           finish_date: null,
           work_hour: 0,
@@ -1426,7 +1428,7 @@ function processFile2(file: File) {
           procedure: "",
           reported_quantity: 0,
           workorder_type: "其他",
-          project_code: item.__EMPTY.slice(-9),
+          project_code: item.__EMPTY_4.slice(-9),
         });
       });
     } else {
@@ -1547,18 +1549,20 @@ const handleDrop2 = (e: DragEvent) => {
       const data = e.target.result;
       const workbook = XLSX.read(data, { type: "binary" });
       // 假设你想根据Sheet的名称来获取数据
-      const sheetName = "加工件清单"; // 这里替换成你的实际Sheet名称
+      const sheetName = "Sheet1"; // 这里替换成你的实际Sheet名称
       const worksheet = workbook.Sheets[sheetName];
       if (worksheet) {
-        jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(3);
+        jsonData.value = XLSX.utils.sheet_to_json(worksheet).slice(1, -1);
+        // 复制第一条数据并插入到数组的第一个索引位置
+        jsonData.value.splice(1, 0, jsonData.value[0]);
         jsonData.value.forEach((item: any) => {
           workOrderData.value.push({
-            product_id: item.__EMPTY,
-            mcode: item.__EMPTY,
-            product_description: item.__EMPTY_1,
-            mdescription: item.__EMPTY_1,
-            planned_quantity: item.__EMPTY_7,
-            unit: item.__EMPTY_8,
+            product_id: item.__EMPTY_4,
+            mcode: item.__EMPTY_4,
+            product_description: item.__EMPTY_5,
+            mdescription: item.__EMPTY_5,
+            planned_quantity: item.__EMPTY_6,
+            unit: item.__EMPTY_7,
             start_date: new Date().toISOString().slice(0, 10),
             finish_date: null,
             work_hour: 0,
@@ -1579,7 +1583,7 @@ const handleDrop2 = (e: DragEvent) => {
             procedure: "",
             reported_quantity: 0,
             workorder_type: "其他",
-            project_code: item.__EMPTY.slice(-9),
+            project_code: item.__EMPTY_4.slice(-9),
           });
         });
       } else {
@@ -1635,7 +1639,7 @@ const handleDrop2 = (e: DragEvent) => {
           </v-col>
           <v-col cols="6">
             <v-text-field
-              label="最早计划 开始日期"
+              label="最早计划开始日期"
               variant="outlined"
               density="compact"
               v-model="startDate"
