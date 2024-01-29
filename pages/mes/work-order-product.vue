@@ -2173,10 +2173,6 @@ const handleDrop2 = (e: DragEvent) => {
                             <v-icon
                               color="red"
                               size="small"
-                              v-show="
-                                item.status === '已分配待排产' ||
-                                item.status === '新增未分配'
-                              "
                               @click="
                                 operatingTicketDetail = { ...item };
                                 deleteDetailDialog = true;
