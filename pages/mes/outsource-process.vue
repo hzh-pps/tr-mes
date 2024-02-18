@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import printJS from "print-js";
+import QrcodeVue from "qrcode.vue";
 // 搜索引擎优化
 useSeoMeta({
   // 该页面的标题
@@ -578,6 +580,25 @@ async function stepSuccess() {
   getOutSourceData();
   stepDialog.value = false;
 }
+// 打印单号
+let selected = ref<any[]>([]);
+let printList = ref<any[]>([]);
+
+async function print() {
+  await selected.value.forEach((item: any) => {
+    printList.value.push({
+      id: item.outsourced_head_code,
+      name: item.outsourced_head_code,
+    });
+  });
+  printJS({
+    printable: "printContent",
+    type: "html",
+    targetStyles: ["*"],
+  });
+  selected.value = [];
+  printList.value = [];
+}
 </script>
 <template>
   <v-row class="ma-2">
@@ -598,7 +619,7 @@ async function stepSuccess() {
           <v-col cols="6">
             <v-text-field
               label="委外单号"
-              v-model="searchSupplier"
+              v-model="searchOutsourced"
               variant="outlined"
               density="compact"
               hide-details
@@ -629,10 +650,46 @@ async function stepSuccess() {
             >
               新增委外
             </v-btn>
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="print"
+            >
+              打印单号
+            </v-btn>
+            <v-col cols="12" v-show="false">
+              <div id="printContent">
+                <div
+                  v-for="(item, index) in printList"
+                  :key="index"
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100%;
+                  "
+                >
+                  <div>
+                    <qrcode-vue
+                      style="width: 70px; height: 70px"
+                      :value="item.id"
+                    ></qrcode-vue>
+                  </div>
+                  <div class="text-text-subtitle-1">
+                    委外单号:{{ item.name }}
+                  </div>
+                </div>
+              </div>
+            </v-col>
           </v-col>
           <v-col cols="12">
             <v-data-table
               hover
+              show-select
+              v-model="selected"
+              return-object
               :items-per-page="10"
               :headers="headerList"
               :items="headerOrderList"

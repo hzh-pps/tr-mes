@@ -8,7 +8,7 @@ export default defineNuxtConfig({
     "/mes/delivery": { ssr: false },
     "/mes/purchase-part": { ssr: false },
     "/work-basic/work-class": { ssr: false },
-    // "/test": { ssr: false },
+    "/mes/outsource-process": { ssr: false },
     "/wms/outbound-shipment": { ssr: false },
     "/dashboard/delivery-dashboard": { ssr: false },
   },
@@ -26,8 +26,8 @@ export default defineNuxtConfig({
   // 配置默认请求地址
   runtimeConfig: {
     public: {
-      // apiBase: "http://10.0.20.250:5009",
-      apiBase: "http://10.0.20.61:8068",
+      apiBase: "http://10.0.20.250:5009",
+      // apiBase: "http://10.0.20.61:8068",
     },
   },
 
