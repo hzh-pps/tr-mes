@@ -319,10 +319,27 @@ async function getProductList(item: any) {
                           <!-- 计划交付日期 -->
                           <div style="flex-basis: 20%">
                             计划交付：
-                            {{
-                              element.mes_workorderdetaildata
-                                .estimated_delivery_date
-                            }}
+                            <span
+                              :style="{
+                                backgroundColor:
+                                  new Date(
+                                    element.mes_workorderdetaildata.estimated_delivery_date
+                                  ) < new Date()
+                                    ? 'red'
+                                    : '',
+                                color:
+                                  new Date(
+                                    element.mes_workorderdetaildata.estimated_delivery_date
+                                  ) < new Date()
+                                    ? 'white'
+                                    : '',
+                              }"
+                            >
+                              {{
+                                element.mes_workorderdetaildata
+                                  .estimated_delivery_date
+                              }}
+                            </span>
                           </div>
                           <!-- 进度 -->
                           <div style="flex-basis: 15%">
@@ -410,7 +427,25 @@ async function getProductList(item: any) {
                                   工序顺序：{{ item_.procedure_order_id }}
                                 </div>
                                 <div style="flex-basis: 22%">
-                                  计划日期：{{ item_.planned_completion_time }}
+                                  计划日期：
+                                  <span
+                                    :style="{
+                                      backgroundColor:
+                                        new Date(
+                                          element.mes_workorderdetaildata.estimated_delivery_date
+                                        ) < new Date()
+                                          ? 'red'
+                                          : '',
+                                      color:
+                                        new Date(
+                                          element.mes_workorderdetaildata.estimated_delivery_date
+                                        ) < new Date()
+                                          ? 'white'
+                                          : '',
+                                    }"
+                                  >
+                                    {{ item_.planned_completion_time }}
+                                  </span>
                                 </div>
                                 <div style="flex-basis: 18%">
                                   工序：[{{ item_.procedure_description }}]
