@@ -379,7 +379,7 @@ async function updateCenterId() {
 
   getWorkOrder();
   getWorkCenterList();
- 
+
   if (overWorkOrder) {
     setSnackbar(
       "green",
@@ -640,6 +640,10 @@ let workDetail = ref<any[]>([]);
 let searchMcode = ref<string>("");
 let searchMdescription = ref<string>("");
 let searchWorkId = ref<string>("");
+let searchWorkType = ref<string>("钣金");
+watch(searchWorkType, function () {
+  getWorkDetail();
+});
 //获取工单明细编号以及派工单
 async function getWorkDetail() {
   const data = await useHttp(
@@ -651,6 +655,7 @@ async function getWorkDetail() {
       workorder_did: searchWorkId.value,
       mcode: searchMcode.value,
       mdescription: searchMdescription.value,
+      workorder_type: searchWorkType.value,
     }
   );
   workDetail.value = data.data
@@ -663,7 +668,6 @@ async function getWorkDetail() {
         item.children = item.children.map((item_: any) => {
           item_.planned_completion_time =
             item_.planned_completion_time.substring(0, 10);
-
           return item_;
         });
       }
@@ -682,6 +686,7 @@ function resetSearchWork() {
   searchMcode.value = "";
   searchWorkId.value = "";
   searchMdescription.value = "";
+  searchWorkType.value = "钣金";
   getWorkDetail();
 }
 let selectedRow = ref<any[]>([]);
@@ -1318,7 +1323,7 @@ function assign() {
               >
             </v-toolbar>
             <v-row class="ma-2">
-              <v-col cols="4">
+              <v-col cols="3">
                 <v-text-field
                   label="工单明细编号"
                   variant="outlined"
@@ -1327,7 +1332,7 @@ function assign() {
                   hide-details
                 ></v-text-field>
               </v-col>
-              <v-col cols="4">
+              <v-col cols="3">
                 <v-text-field
                   label="图纸号"
                   v-model="searchMcode"
@@ -1336,7 +1341,7 @@ function assign() {
                   hide-details
                 ></v-text-field>
               </v-col>
-              <v-col cols="4">
+              <v-col cols="3">
                 <v-text-field
                   label="产出料"
                   v-model="searchMdescription"
@@ -1344,6 +1349,23 @@ function assign() {
                   density="compact"
                   hide-details
                 ></v-text-field>
+              </v-col>
+              <v-col cols="3">
+                <v-select
+                  label="工单类型"
+                  v-model="searchWorkType"
+                  :items="[
+                    '钣金',
+                    '机加',
+                    '电气装配',
+                    '模组装配',
+                    '总装',
+                    '其他',
+                  ]"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                ></v-select>
               </v-col>
 
               <v-col cols="12">

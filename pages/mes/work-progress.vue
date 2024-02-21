@@ -426,7 +426,19 @@ async function getProductList(item: any) {
                                 <div style="flex-basis: 10%">
                                   工序顺序：{{ item_.procedure_order_id }}
                                 </div>
-                                <div style="flex-basis: 22%">
+                                <div
+                                  v-if="
+                                    item_.reported_quantity >=
+                                    item_.planned_quantity
+                                  "
+                                  style="flex-basis: 22%"
+                                >
+                                  计划日期：
+                                  <span>
+                                    {{ item_.planned_completion_time }}
+                                  </span>
+                                </div>
+                                <div v-else style="flex-basis: 22%">
                                   计划日期：
                                   <span
                                     :style="{
