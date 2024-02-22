@@ -393,16 +393,9 @@ let orderHeader = ref<any[]>([
     filterable: true,
   },
   {
-    title: "计划数量",
+    title: "供应商",
     align: "center",
-    key: "planned_quantity",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "单位",
-    align: "center",
-    key: "unit",
+    key: "supplier_name",
     sortable: false,
     filterable: true,
   },
@@ -415,6 +408,7 @@ let tableData = ref<any[]>([]);
 let searchDo = ref<any>("");
 let searchName2 = ref<any>("");
 let searchCode = ref<any>("");
+let searchSupplier2 = ref<any>("");
 //获取数据库数据
 async function getDispatch() {
   const data: any = await useHttp(
@@ -430,6 +424,7 @@ async function getDispatch() {
       dispatch_order: searchDo.value,
       material_name: searchName2.value,
       material_id: searchCode.value,
+      supplier_name: searchSupplier2.value,
       defaul_outsource: "Y",
     }
   );
@@ -445,6 +440,7 @@ function resetFilter2() {
   searchDo.value = "";
   searchName2.value = "";
   searchCode.value = "";
+  searchSupplier2.value = "";
   getDispatch();
 }
 let tabArr = ref<any[]>([]);
@@ -996,7 +992,7 @@ async function print() {
         </v-toolbar>
         <v-card-text class="mt-4">
           <v-row>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 label="派工单号"
                 variant="outlined"
@@ -1005,7 +1001,7 @@ async function print() {
                 v-model="searchDo"
               ></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 label="物料名称"
                 v-model="searchName2"
@@ -1014,10 +1010,19 @@ async function print() {
                 hide-details
               ></v-text-field>
             </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 label="物料编码"
                 v-model="searchCode"
+                variant="outlined"
+                density="compact"
+                hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                label="供应商"
+                v-model="searchSupplier2"
                 variant="outlined"
                 density="compact"
                 hide-details

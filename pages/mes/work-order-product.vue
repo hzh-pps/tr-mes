@@ -466,6 +466,7 @@ async function saveTicket() {
           required_inspection: _item.rsv3,
           employee_id: "",
           employee_name: "",
+          supplier_name:item.supplier_name,
         });
       });
     });
@@ -1332,7 +1333,7 @@ function handleFileChosen2(event: any) {
   }
 }
 
-// 处理文件
+// 机加工处理文件
 function processFile(file: File) {
   jsonData.value = [];
   workOrderData.value = [];
@@ -1385,7 +1386,7 @@ function processFile(file: File) {
   addDetailDialog3.value = true;
 }
 
-// 处理文件
+// 委外处理文件
 function processFile2(file: File) {
   jsonData.value = [];
   workOrderData.value = [];
@@ -1429,6 +1430,7 @@ function processFile2(file: File) {
           reported_quantity: 0,
           workorder_type: "其他",
           project_code: item.__EMPTY_4.slice(-9),
+          supplier_name: item.__EMPTY_9,
         });
       });
     } else {
@@ -1530,7 +1532,6 @@ async function addDetailSucces2() {
     getWorkOrderDetail();
     getWorkOrder();
   }
-  console.log(workOrderData.value);
 }
 
 function subData(itemToDelete: any) {
@@ -1584,6 +1585,7 @@ const handleDrop2 = (e: DragEvent) => {
             reported_quantity: 0,
             workorder_type: "其他",
             project_code: item.__EMPTY_4.slice(-9),
+            supplier_name: item.__EMPTY_9,
           });
         });
       } else {
