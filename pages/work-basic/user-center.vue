@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { number } from "echarts";
-
 //弹框
 let dialogAdd = ref(false);
 let dialogDelete = ref(false);

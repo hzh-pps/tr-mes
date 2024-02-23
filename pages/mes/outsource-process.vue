@@ -276,7 +276,7 @@ let searchEndDate = endDate.toISOString().substring(0, 10);
 async function getOutSourceData() {
   const data: any = await useHttp("/QaOrder/M81GetQaOrder", "get", undefined, {
     outsourced_head_code: code.value,
-    supplier_id: searchSupplier.value,
+
     material_name: searchName.value,
     dispatch_order: searchDispatch.value,
     outsourced_status: searchStatus.value,
