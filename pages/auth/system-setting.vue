@@ -41,10 +41,10 @@ onMounted(() => {
         display: flex;
         justify-content: center;
         align-items: center;
-        text-shadow: 5px 5px 5px #ff0000
+        text-shadow: 5px 5px 5px #ff0000;
       "
-    >                    
-      当前版本信息:1.01
+    >
+      当前版本信息:1.02
     </div>
   </div>
 </template>
