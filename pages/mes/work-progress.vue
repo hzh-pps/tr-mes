@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import printJS from "print-js";
+import QrcodeVue from "qrcode.vue";
 // 搜索引擎优化
 useSeoMeta({
   // 该页面的标题
@@ -164,6 +166,19 @@ async function getProductList(item: any) {
     return item;
   });
 }
+// 打印内容
+let printList = ref<any[]>([]);
+// 打印明细
+async function printWorkOrder(item: any) {
+  await getProductList(item);
+  await (printList.value = productList.value);
+  printJS({
+    printable: "printContent",
+    type: "html",
+    targetStyles: ["*"],
+  });
+  printList.value = [];
+}
 </script>
 
 <template>
@@ -317,7 +332,7 @@ async function getProductList(item: any) {
                             }}
                           </div>
                           <!-- 计划交付日期 -->
-                          <div style="flex-basis: 20%">
+                          <div style="flex-basis: 15%">
                             计划交付：
                             <span
                               :style="{
@@ -376,7 +391,19 @@ async function getProductList(item: any) {
                               >
                             </v-progress-circular>
                           </div>
+                          <!-- 打印 -->
+                          <div class="mr-5">
+                            <v-btn
+                              color="blue-darken-2"
+                              variant="outlined"
+                              size="default"
+                              rounded="circle"
+                              @click.stop="printWorkOrder(element)"
+                              >打印</v-btn
+                            >
+                          </div>
                         </v-expansion-panel-title>
+
                         <v-expansion-panel-text>
                           <v-list-item
                             v-for="(item_, index_) in productList"
@@ -511,6 +538,79 @@ async function getProductList(item: any) {
             </v-window-item>
           </v-window>
         </v-card-text>
+        <!-- 打印页面 -->
+        <div v-show="false">
+          <div id="printContent">
+            <!--派工单二维码页面  -->
+            <div v-for="(item_, index_) in printList" :key="index_">
+              <div style="display: flex" class="mt-3">
+                <div
+                  style="padding-right: 5px; flex-basis: 12%"
+                  v-if="index_ % 2 === 0"
+                >
+                  <qrcode-vue
+                    style="width: 70px; height: 70px"
+                    :value="item_.dispatch_order"
+                  ></qrcode-vue>
+                </div>
+                <div
+                  style="
+                    font-family: 'SongTi';
+                    flex-basis: 25%;
+                    align-self: center;
+                  "
+                >
+                  派工单号：{{ item_.dispatch_order }}
+                </div>
+
+                <div
+                  style="
+                    font-family: 'SongTi';
+                    flex-basis: 25%;
+                    align-self: center;
+                    font-weight: bold;
+                  "
+                >
+                  工序顺序：{{ item_.procedure_order_id }} [{{
+                    item_.procedure_description
+                  }}]
+                </div>
+
+                <div
+                  style="
+                    font-family: 'SongTi';
+                    flex-basis: 15%;
+                    align-self: center;
+                  "
+                >
+                  质检:
+                  <span style="font-weight: bold">
+                    {{ item_.required_inspection === "Y" ? "是" : "否" }}
+                  </span>
+                </div>
+                <div
+                  style="
+                    font-family: 'SongTi';
+                    flex-basis: 20%;
+                    align-self: center;
+                  "
+                >
+                  @{{ item_.work_center_name }}
+                </div>
+                <div
+                  style="padding-right: 5px; flex-basis: 12%"
+                  v-if="index_ % 2 !== 0"
+                >
+                  <qrcode-vue
+                    style="width: 70px; height: 70px"
+                    :value="item_.dispatch_order"
+                  ></qrcode-vue>
+                </div>
+              </div>
+              <hr />
+            </div>
+          </div>
+        </div>
       </v-card>
     </v-col>
   </v-row>

@@ -347,6 +347,7 @@ async function saveQaInfo() {
               <div
                 style="flex-basis: 12%"
                 class="text-body-1 text-blue-darken-1"
+                v-if="item.inspection_status === '待质检'"
               >
                 报工人：
                 <span
@@ -354,6 +355,19 @@ async function saveQaInfo() {
                   style="text-decoration: underline"
                 >
                   {{ item.creator }}
+                </span>
+              </div>
+              <div
+                style="flex-basis: 12%"
+                class="text-body-1 text-blue-darken-1"
+                v-else
+              >
+                质检人：
+                <span
+                  class="text-blue-grey-lighten-2"
+                  style="text-decoration: underline"
+                >
+                  {{ item.update_person }}
                 </span>
               </div>
             </div>

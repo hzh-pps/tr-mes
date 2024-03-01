@@ -1031,7 +1031,7 @@ async function addHomeInfo() {
     projectCompany: homeInfo.value.projectCompany,
     projectType: homeInfo.value.projectType,
     resultCode: "",
-    totalCode: "",
+    totalCode: homeInfo.value.totalCode,
     totalName: homeInfo.value.totalName,
     unitCode: homeInfo.value.unitName.id,
     unitName: homeInfo.value.unitName.name,
@@ -2094,6 +2094,11 @@ function subData(itemToDelete: any) {
           <v-text-field
             label="总装物料名"
             v-model="homeInfo.totalName"
+          ></v-text-field>
+          <v-text-field
+            label="设备编号"
+            v-model="homeInfo.totalCode"
+            hint="增补工单的设备编号可为空或者为'T0000''"
           ></v-text-field>
           <v-select
             label="单位"
