@@ -100,7 +100,7 @@ function resetFilter() {
         >
           <div class="d-flex ma-2">
             <!-- 1 -->
-            <div class="flex-grow-0">
+            <div class="flex-grow-1">
               <div
                 class="text-body-1 text-blue-darken-1"
                 style="flex-basis: 12%"
@@ -128,7 +128,7 @@ function resetFilter() {
               </div>
             </div>
             <!-- 2 -->
-            <div class="flex-grow-0 ml-8 pl-8">
+            <div class="flex-grow-1 ml-8 pl-8">
               <div
                 style="flex-basis: 12%"
                 class="text-body-1 text-blue-darken-1"
@@ -156,7 +156,7 @@ function resetFilter() {
               </div>
             </div>
             <!-- 3 -->
-            <div class="flex-grow-0 ml-8 pl-8">
+            <div class="flex-grow-1 ml-8 pl-8">
               <div
                 style="flex-basis: 22%"
                 class="text-body-1 text-blue-darken-1"
@@ -184,7 +184,7 @@ function resetFilter() {
               </div>
             </div>
             <!-- 4 -->
-            <div class="flex-grow-0 ml-8 pl-8">
+            <div class="flex-grow-1 ml-8 pl-8">
               <div
                 style="flex-basis: 15%"
                 class="text-body-1 text-blue-darken-1"
@@ -210,7 +210,7 @@ function resetFilter() {
               </div>
             </div>
             <!--5 -->
-            <div class="flex-grow-0 ml-8 pl-8">
+            <div class="flex-grow-1 ml-8 pl-8">
               <div
                 style="flex-basis: 20%"
                 class="text-body-1 text-blue-darken-1"
