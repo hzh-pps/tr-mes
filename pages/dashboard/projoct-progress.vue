@@ -254,28 +254,32 @@ async function getProductList(item: any) {
                     element.machine_quantity_completed ===
                   0
                     ? '0%'
-                    : Math.round(
-                        (element.assemble_quantity_completed /
-                          element.assemble_total_quantity) *
-                          100
-                      ) *
-                        Math.round(
-                          element.assemble_proportion /
-                            (element.machine_proportion +
-                              element.assemble_proportion)
-                        ) +
-                      '%' +
-                      Math.round(
-                        (element.machine_quantity_completed /
-                          element.machine_total_quantity) *
-                          100
-                      ) *
-                        Math.round(
-                          element.machine_quantity_completed /
-                            (element.machine_proportion +
-                              element.assemble_proportion)
-                        ) +
-                      '%'
+                    : (element.assemble_total_quantity === 0
+                        ? '0%'
+                        : Math.round(
+                            (element.assemble_quantity_completed /
+                              element.assemble_total_quantity) *
+                              100
+                          ) *
+                            Math.round(
+                              element.assemble_proportion /
+                                (element.machine_proportion +
+                                  element.assemble_proportion)
+                            ) +
+                          '%') +
+                      (element.machine_quantity_completed === 0
+                        ? '0%'
+                        : Math.round(
+                            (element.machine_quantity_completed /
+                              element.machine_total_quantity) *
+                              100
+                          ) *
+                            Math.round(
+                              element.machine_quantity_completed /
+                                (element.machine_proportion +
+                                  element.assemble_proportion)
+                            ) +
+                          '%')
                 "
                 :size="38"
                 color="deep-orange-lighten-2"
