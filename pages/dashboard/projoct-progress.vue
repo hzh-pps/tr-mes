@@ -183,18 +183,7 @@ async function getProductList(item: any) {
   <v-row class="ma-2">
     <v-col cols="4">
       <div class="d-flex">
-        <!-- 输入框 -->
-        <div class="box-input">
-          <div class="border">
-            <input
-              type="text"
-              name="text"
-              class="input"
-              placeholder="输入查询的项目号"
-              v-model="project"
-            />
-          </div>
-        </div>
+        <v-text-field v-model="project" label="输入查询的项目号"></v-text-field>
         <!-- 按钮 -->
         <button class="btn-class-name ml-6" @click="showList()">
           <span class="back"></span>
