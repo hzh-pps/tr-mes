@@ -33,7 +33,10 @@ let units = ref<any[]>([
   { id: "27", name: "包" },
   { id: "28", name: "本" },
 ]);
-let project = ref<string>("ZL24028-0");
+let project = ref<string>("ZM23247-0");
+watch(project, function () {
+  getProjectProgress();
+});
 let addDialog = ref<boolean>(false);
 let editDialog = ref<boolean>(false);
 let deleteDialog = ref<boolean>(false);
@@ -82,9 +85,9 @@ watch(assemble_proportion, function () {
 let projectInfo = ref<any>(null);
 function addProject() {
   projectInfo.value = {
-    project_id: "",
+    project_id: project.value,
     material_name: "",
-    material_code: "123",
+    material_code: "",
     equipment_code: "",
     delivery_date: "",
     total_quantity: "",
@@ -178,18 +181,34 @@ async function getProductList(item: any) {
   );
   productInfo.value = data.data;
 }
+function calculateProgress(item: any) {
+  let machineProgress = 0;
+  let assembleProgress = 0;
+
+  // 避免除以0的情况
+  if (item.machine_total_quantity > 0) {
+    machineProgress =
+      item.machine_quantity_completed / item.machine_total_quantity;
+  }
+
+  if (item.assemble_total_quantity > 0) {
+    assembleProgress =
+      item.assemble_quantity_completed / item.assemble_total_quantity;
+  }
+
+  // 计算总进度
+  const totalProgress =
+    (machineProgress * item.machine_proportion +
+      assembleProgress * item.assemble_proportion) /
+    (item.machine_proportion + item.assemble_proportion);
+
+  return Math.round(totalProgress * 100) + "%";
+}
 </script>
 <template>
   <v-row class="ma-2">
     <v-col cols="4">
-      <div class="d-flex">
-        <v-text-field v-model="project" label="输入查询的项目号"></v-text-field>
-        <!-- 按钮 -->
-        <button class="btn-class-name ml-6" @click="showList()">
-          <span class="back"></span>
-          <span class="front"></span>
-        </button>
-      </div>
+      <v-text-field v-model="project" label="输入查询的项目号"></v-text-field>
     </v-col>
 
     <v-col cols="12">
@@ -238,71 +257,13 @@ async function getProductList(item: any) {
             <div style="flex-basis: 15%">
               当前进度:
               <v-progress-circular
-                :model-value="
-                  element.assemble_quantity_completed +
-                    element.machine_quantity_completed ===
-                  0
-                    ? '0%'
-                    : (element.assemble_total_quantity === 0
-                        ? '0%'
-                        : Math.round(
-                            (element.assemble_quantity_completed /
-                              element.assemble_total_quantity) *
-                              100
-                          ) *
-                            Math.round(
-                              element.assemble_proportion /
-                                (element.machine_proportion +
-                                  element.assemble_proportion)
-                            ) +
-                          '%') +
-                      (element.machine_quantity_completed === 0
-                        ? '0%'
-                        : Math.round(
-                            (element.machine_quantity_completed /
-                              element.machine_total_quantity) *
-                              100
-                          ) *
-                            Math.round(
-                              element.machine_quantity_completed /
-                                (element.machine_proportion +
-                                  element.assemble_proportion)
-                            ) +
-                          '%')
-                "
+                :model-value="calculateProgress(element)"
                 :size="38"
                 color="deep-orange-lighten-2"
               >
-                <span style="font-size: 12px">
-                  {{
-                    element.assemble_quantity_completed +
-                      element.machine_quantity_completed ===
-                    0
-                      ? "0%"
-                      : Math.round(
-                          (element.assemble_quantity_completed /
-                            element.assemble_total_quantity) *
-                            100
-                        ) *
-                          Math.round(
-                            element.assemble_proportion /
-                              (element.machine_proportion +
-                                element.assemble_proportion)
-                          ) +
-                        "%" +
-                        Math.round(
-                          (element.machine_quantity_completed /
-                            element.machine_total_quantity) *
-                            100
-                        ) *
-                          Math.round(
-                            element.machine_quantity_completed /
-                              (element.machine_proportion +
-                                element.assemble_proportion)
-                          ) +
-                        "%"
-                  }}</span
-                >
+                <span style="font-size: 12px">{{
+                  calculateProgress(element)
+                }}</span>
               </v-progress-circular>
             </div>
             <!-- 操作 -->
