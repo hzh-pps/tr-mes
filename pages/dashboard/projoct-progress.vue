@@ -196,6 +196,11 @@ function calculateProgress(item: any) {
       item.assemble_quantity_completed / item.assemble_total_quantity;
   }
 
+  // 如果加工总量和装配总量都为0，则直接返回进度为0%
+  if (item.machine_total_quantity === 0 && item.assemble_total_quantity === 0) {
+    return "0%";
+  }
+
   // 计算总进度
   const totalProgress =
     (machineProgress * item.machine_proportion +
