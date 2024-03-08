@@ -422,7 +422,7 @@ async function getDispatch() {
       SortType: "1",
       status: "已排产待执行",
       dispatch_order: searchDo.value,
-      material_name: searchName2.value,
+      procedure_name: searchName2.value,
       material_id: searchCode.value,
       supplier_name: searchSupplier2.value,
       defaul_outsource: "Y",
@@ -981,7 +981,7 @@ async function print() {
     </v-dialog>
 
     <!-- 新增委外工序 -->
-    <v-dialog v-model="addDialog" min-width="1400px" width="560px">
+    <v-dialog v-model="addDialog" width="1800px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 新增委外工序 </v-toolbar-title>
@@ -1003,7 +1003,7 @@ async function print() {
             </v-col>
             <v-col cols="3">
               <v-text-field
-                label="物料名称"
+                label="工序名称"
                 v-model="searchName2"
                 variant="outlined"
                 density="compact"
@@ -1058,7 +1058,7 @@ async function print() {
                 style="overflow-x: auto; white-space: nowrap"
                 fixed-footer
                 fixed-header
-                height="400"
+                height="600"
                 no-data-text="没有找到符合的数据"
               >
               </v-data-table>
