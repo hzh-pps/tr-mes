@@ -33,7 +33,7 @@ let units = ref<any[]>([
   { id: "27", name: "包" },
   { id: "28", name: "本" },
 ]);
-let project = ref<string>("ZM23247-0");
+let project = ref<string>("ZL24028-0");
 watch(project, function () {
   getProjectProgress();
 });
@@ -211,6 +211,23 @@ function calculateProgress(item: any) {
 
   return Math.round(totalProgress * 100) + "%";
 }
+
+// 工单明细详情和派工单详情
+let detailDialog = ref<boolean>(false);
+let detailList = ref<any[]>([]);
+async function showDetail(item: any) {
+  const data: any = await useHttp(
+    "/MesWorkOrderDetail/M122Getprogress",
+    "get",
+    undefined,
+    {
+      workorder_dids: item.workorder_did,
+    }
+  );
+  detailList.value = data.data;
+  console.log(detailList.value);
+  detailDialog.value = true;
+}
 </script>
 <template>
   <v-row class="ma-2">
@@ -319,12 +336,20 @@ function calculateProgress(item: any) {
                     {{ item.workorder_type }}
                   </span>
                 </div>
-
                 <div
                   style="flex-basis: 12%"
                   class="text-body-1 text-blue-darken-1"
                 >
-                  工单数量：
+                  工单明细数：
+                  <span class="" style="text-decoration: underline">
+                    {{ item.detail_count }}
+                  </span>
+                </div>
+                <div
+                  style="flex-basis: 12%"
+                  class="text-body-1 text-blue-darken-1"
+                >
+                  计划产出料：
                   <span class="" style="text-decoration: underline">
                     {{ item.total_quantity }}
                   </span>
@@ -371,6 +396,15 @@ function calculateProgress(item: any) {
                       }}</span
                     >
                   </v-progress-circular>
+                </div>
+
+                <div
+                  style="flex-basis: 12%"
+                  class="text-body-1 text-blue-darken-1 d-flex justify-end"
+                >
+                  <v-icon @click="showDetail(item)"
+                    >fa-regular fa-hand-pointer</v-icon
+                  >
                 </div>
               </div>
             </v-list>
@@ -550,6 +584,211 @@ function calculateProgress(item: any) {
         </div>
       </v-card>
     </v-dialog>
+    <!-- 工单明细详情和派工单详情 -->
+    <v-dialog v-model="detailDialog" min-width="1800px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 工单明细详情 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn @click="detailDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-list v-for="(element, index) in detailList" :key="index">
+            <v-list-item>
+              <v-list-item-title>
+                <div class="d-flex">
+                  <!-- 工单明细编号 -->
+                  <div style="flex-basis: 22%">
+                    工单明细编号：
+                    {{ element.mes_workorderdetaildata.workorder_did }}
+                  </div>
+                  <!-- 产出料 -->
+                  <div style="flex-basis: 30%">
+                    <div>
+                      产出料：{{ element.mes_workorderdetaildata.mdescription }}
+                    </div>
+                    <div class="mt-2">
+                      图纸号：{{ element.mes_workorderdetaildata.mcode }}
+                    </div>
+                  </div>
+
+                  <!-- 计划产出料数量 -->
+                  <div style="flex-basis: 13%">
+                    计划数量：
+                    {{ element.mes_workorderdetaildata.planned_quantity }}
+                  </div>
+                  <!-- 计划交付日期 -->
+                  <div style="flex-basis: 15%">
+                    计划交付：
+                    <span
+                      :style="{
+                        backgroundColor:
+                          new Date(
+                            element.mes_workorderdetaildata.estimated_delivery_date
+                          ) < new Date()
+                            ? 'red'
+                            : '',
+                        color:
+                          new Date(
+                            element.mes_workorderdetaildata.estimated_delivery_date
+                          ) < new Date()
+                            ? 'white'
+                            : '',
+                      }"
+                    >
+                      {{
+                        element.mes_workorderdetaildata.estimated_delivery_date
+                      }}
+                    </span>
+                  </div>
+                  <!-- 进度 -->
+                  <div style="flex-basis: 15%">
+                    当前进度:
+                    <v-progress-circular
+                      :model-value="
+                        element.planned_total_quantity === 0
+                          ? '0%'
+                          : element.reported_quantity >
+                            element.planned_total_quantity
+                          ? '100%'
+                          : Math.round(
+                              (element.reported_quantity /
+                                element.planned_total_quantity) *
+                                100
+                            ) + '%'
+                      "
+                      :size="38"
+                      color="deep-orange-lighten-2"
+                    >
+                      <span style="font-size: 12px">
+                        {{
+                          element.planned_total_quantity === 0
+                            ? 0 + "%"
+                            : element.reported_quantity >
+                              element.planned_total_quantity
+                            ? "100%"
+                            : Math.round(
+                                (element.reported_quantity /
+                                  element.planned_total_quantity) *
+                                  100
+                              ) + "%"
+                        }}</span
+                      >
+                    </v-progress-circular>
+                  </div>
+                </div>
+              </v-list-item-title>
+              <v-list-item-subtitle
+                v-for="(
+                  item_, index_
+                ) in element.productionrecode_Response_list"
+                :key="index_"
+              >
+                <template v-slot:default>
+                  <div class="d-flex align-center">
+                    <div style="flex-basis: 10%">
+                      进度：<v-progress-circular
+                        :model-value="
+                          item_.reported_quantity > item_.planned_quantity
+                            ? '100%'
+                            : Math.round(
+                                (item_.reported_quantity /
+                                  item_.planned_quantity) *
+                                  100
+                              ) + '%'
+                        "
+                        :size="38"
+                        color="deep-orange-lighten-2"
+                      >
+                        <span style="font-size: 12px">
+                          {{
+                            item_.reported_quantity > item_.planned_quantity
+                              ? "100%"
+                              : Math.round(
+                                  (item_.reported_quantity /
+                                    item_.planned_quantity) *
+                                    100
+                                ) + "%"
+                          }}</span
+                        >
+                      </v-progress-circular>
+                    </div>
+
+                    <div style="flex-basis: 15%" v-if="item_.dispatch_order">
+                      派工单号：{{ item_.dispatch_order }}
+                    </div>
+                    <div style="flex-basis: 15%" v-else>
+                      派工单号：任务未派工
+                    </div>
+                    <div style="flex-basis: 10%">
+                      工序顺序：{{ item_.procedure_order_id }}
+                    </div>
+                    <div
+                      v-if="item_.reported_quantity >= item_.planned_quantity"
+                      style="flex-basis: 22%"
+                    >
+                      计划日期：
+                      <span>
+                        {{ item_.planned_completion_time }}
+                      </span>
+                    </div>
+                    <div v-else style="flex-basis: 22%">
+                      计划日期：
+                      <span
+                        :style="{
+                          backgroundColor:
+                            new Date(
+                              element.mes_workorderdetaildata.estimated_delivery_date
+                            ) < new Date()
+                              ? 'red'
+                              : '',
+                          color:
+                            new Date(
+                              element.mes_workorderdetaildata.estimated_delivery_date
+                            ) < new Date()
+                              ? 'white'
+                              : '',
+                        }"
+                      >
+                        {{ item_.planned_completion_time }}
+                      </span>
+                    </div>
+                    <div style="flex-basis: 18%">
+                      工序：[{{ item_.procedure_description }}]
+                    </div>
+                    <div style="flex-basis: 10%">
+                      委外：{{ item_.defaul_outsource === "N" ? "否" : "是" }}
+                    </div>
+                    <div style="flex-basis: 12%">
+                      人员：{{
+                        item_.start_name === null ? "未开始" : item_.start_name
+                      }}
+                    </div>
+
+                    <div style="flex-basis: 12%">
+                      报工数量：{{
+                        item_.noqa_quantity === null ? 0 : item_.noqa_quantity
+                      }}
+                    </div>
+                    <div style="flex-basis: 12%">
+                      合格数量：{{ item_.reported_quantity }}
+                    </div>
+                    <div style="flex-basis: 10%" v-if="item_.work_center_name">
+                      @{{ item_.work_center_name }}
+                    </div>
+                    <div style="flex-basis: 10%" v-else>未分配工作中心</div>
+                  </div>
+                </template>
+              </v-list-item-subtitle>
+              <v-divider :thickness="4" color="black" class="mt-2"></v-divider>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar location="top" v-model="snackbarShow" :color="snackbarColor">
       {{ snackbarText }}
       <template v-slot:actions>
@@ -558,123 +797,4 @@ function calculateProgress(item: any) {
     </v-snackbar>
   </v-row>
 </template>
-<style scoped>
-/* 文本框 */
-.box-input {
-  position: relative;
-}
-
-.border {
-  background-image: linear-gradient(
-    to right bottom,
-    #e300ff,
-    #ff00aa,
-    #ff5956,
-    #ffb900,
-    #fffe00
-  );
-  box-shadow: -25px -10px 30px -5px rgba(225, 0, 255, 0.5),
-    25px -10px 30px -5px rgba(255, 0, 212, 0.5),
-    25px 10px 30px -5px rgba(255, 174, 0, 0.5),
-    -25px 10px 30px -5px rgba(255, 230, 0, 0.5);
-  padding: 4px;
-}
-
-.input {
-  background-color: #212121;
-  max-width: 250px;
-  height: 40px;
-  padding: 0 19px 0 10px;
-  font-size: 1.1em;
-  position: relative;
-  border: none;
-  color: white;
-  outline: 0;
-  overflow: hidden;
-}
-
-.box-input::after,
-.box-input::before {
-  content: "";
-  width: 130px;
-  height: 30px;
-  position: absolute;
-  z-index: -1;
-}
-
-.box-input::after {
-  bottom: 0;
-  right: 0;
-}
-
-.box-input::before {
-  top: 0;
-  left: 0;
-}
-
-.input::placeholder {
-  transition: all 0.5s ease-in, transform 0.2s ease-in 0.6s;
-}
-
-.input:focus::placeholder {
-  padding-left: 165px;
-  transform: translateY(-50px);
-}
-
-/* 按钮 */
-.btn-class-name {
-  --primary: 255, 90, 120;
-  --secondary: 150, 50, 60;
-  width: 60px;
-  height: 50px;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-  outline: 10px solid rgb(var(--primary), 0.5);
-  border-radius: 100%;
-  position: relative;
-  transition: 0.3s;
-}
-
-.btn-class-name .back {
-  background: rgb(var(--secondary));
-  border-radius: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.btn-class-name .front {
-  background: linear-gradient(
-    0deg,
-    rgba(var(--primary), 0.6) 20%,
-    rgba(var(--primary)) 50%
-  );
-  box-shadow: 0 0.5em 1em -0.2em rgba(var(--secondary), 0.5);
-  border-radius: 100%;
-  position: absolute;
-  border: 1px solid rgb(var(--secondary));
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-  font-weight: 600;
-  font-family: inherit;
-  transform: translateY(-15%);
-  transition: 0.15s;
-  color: rgb(var(--secondary));
-}
-
-.btn-class-name:active .front {
-  transform: translateY(0%);
-  box-shadow: 0 0;
-}
-</style>
+<style scoped></style>
