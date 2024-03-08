@@ -763,7 +763,11 @@ async function showDetail(item: any) {
                     </div>
                     <div style="flex-basis: 12%">
                       人员：{{
-                        item_.start_name === null ? "未开始" : item_.start_name
+                        item_.reported_quantity !== 0
+                          ? "已完成"
+                          : item_.start_name === null
+                          ? "未开始"
+                          : item_.start_name
                       }}
                     </div>
 
