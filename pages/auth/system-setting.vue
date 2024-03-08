@@ -44,7 +44,7 @@ onMounted(() => {
         text-shadow: 5px 5px 5px #ff0000;
       "
     >
-      当前版本信息:1.02
+      当前版本信息:1.0.9
     </div>
   </div>
 </template>
