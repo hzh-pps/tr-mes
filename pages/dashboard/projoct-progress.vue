@@ -33,7 +33,7 @@ let units = ref<any[]>([
   { id: "27", name: "包" },
   { id: "28", name: "本" },
 ]);
-let project = ref<string>("ZL24028-0");
+let project = ref<string>("ZM23247-0");
 watch(project, function () {
   getProjectProgress();
 });
