@@ -125,6 +125,8 @@ async function addSave() {
 // 编辑
 function showEdit(item: any) {
   projectInfo.value = { ...item };
+  machine_proportion.value = item.machine_proportion;
+  assemble_proportion.value = item.assemble_proportion;
   editDialog.value = true;
 }
 async function editSave() {
