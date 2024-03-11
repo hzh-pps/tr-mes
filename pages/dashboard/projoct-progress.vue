@@ -402,8 +402,13 @@ async function showDetail(item: any) {
                   style="flex-basis: 12%"
                   class="text-body-1 text-blue-darken-1 d-flex justify-end"
                 >
-                  <v-icon @click="showDetail(item)"
-                    >fa-regular fa-hand-pointer</v-icon
+                  <v-btn
+                    variant="text"
+                    color="blue-darken-2"
+                    @click="showDetail(item)"
+                    ><v-icon class="mr-2 mb-1"
+                      >fa-regular fa-hand-pointer</v-icon
+                    >点击查看明细详情</v-btn
                   >
                 </div>
               </div>
@@ -585,7 +590,7 @@ async function showDetail(item: any) {
       </v-card>
     </v-dialog>
     <!-- 工单明细详情和派工单详情 -->
-    <v-dialog v-model="detailDialog" min-width="1800px" width="560px">
+    <v-dialog v-model="detailDialog" min-width="1600px" width="560px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 工单明细详情 </v-toolbar-title>
@@ -620,20 +625,18 @@ async function showDetail(item: any) {
                     {{ element.mes_workorderdetaildata.planned_quantity }}
                   </div>
                   <!-- 计划交付日期 -->
-                  <div style="flex-basis: 15%">
+                  <div style="flex-basis: 20%">
                     计划交付：
                     <span
                       :style="{
                         backgroundColor:
-                          new Date(
-                            element.mes_workorderdetaildata.estimated_delivery_date
-                          ) < new Date()
+                          element.reported_quantity <
+                          element.planned_total_quantity
                             ? 'red'
                             : '',
                         color:
-                          new Date(
-                            element.mes_workorderdetaildata.estimated_delivery_date
-                          ) < new Date()
+                          element.reported_quantity <
+                          element.planned_total_quantity
                             ? 'white'
                             : '',
                       }"
