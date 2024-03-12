@@ -1,26 +1,47 @@
 <template>
-  <div
-    style="
-      height: 99%;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    "
-  >
-    <Chart
-      :type="chartData.type"
-      v-if="loaded"
-      :data="chartData"
-      :options="chartOptions"
-    />
-  </div>
+  <v-row class="ma-2" style="display: flex; justify-content: center">
+    <v-col cols="12" style="max-width: 20%">
+      <v-text-field v-model="project" label="输入查询的项目号"></v-text-field>
+    </v-col>
+    <v-col cols="12">
+      <v-carousel
+        height="400"
+        show-arrows="hover"
+        cycle
+        hide-delimiter-background
+      >
+        <v-carousel-item
+          v-for="(item, index) in projectProgress"
+          :key="index"
+          style="display: flex; align-items: center"
+        >
+          <v-col cols="3">
+            <v-progress-circular
+              :model-value="calculateProgress(item)"
+              :rotate="360"
+              :size="200"
+              :width="20"
+              color="teal"
+            >
+              <template v-slot:default> {{ item.material_name }} </template>
+            </v-progress-circular>
+          </v-col>
+          <v-col cols="9">
+            <Chart
+              :type="chartData.type"
+              v-if="loaded"
+              :data="chartData"
+              :options="chartOptions"
+            />
+          </v-col>
+        </v-carousel-item>
+      </v-carousel>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup lang="ts">
 import { Chart } from "vue-chartjs";
-import { Line } from "vue-chartjs";
-import { Bar } from "vue-chartjs";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
@@ -50,25 +71,24 @@ ChartJS.register(
   LineController, // 注册Line控制器
   BarController // 注册Line控制器
 );
-
+const loaded = ref(false); // 新增一个响应式变量来控制加载状态
 // 获取今天前七天的日期数组
 const getPastSevenDays = () => {
   const dates = [];
-  for (let i = 14; i > 0; i--) {
+  for (let i = 7; i > 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     dates.push(date.toLocaleDateString());
   }
   return dates;
 };
-const loaded = ref(false); // 新增一个响应式变量来控制加载状态
 // 创建图表数据
 const chartData = ref<any>({
   type: "bar",
   labels: getPastSevenDays(),
   datasets: [
     {
-      label: "每日装箱单",
+      label: "派工单开始",
       data: [], // 示例数据，应从API或其他数据源获取
       fill: false,
       borderColor: "red",
@@ -78,7 +98,7 @@ const chartData = ref<any>({
       type: "line", // 设置图表类型为折线图
     },
     {
-      label: "每日装箱单",
+      label: "派工单完成数",
       data: [], // 示例数据，应从API或其他数据源获取
       fill: false,
       backgroundColor: "#8abcf9",
@@ -90,6 +110,8 @@ const chartData = ref<any>({
 // 创建图表选项
 const chartOptions = ref({
   responsive: true,
+  maintainAspectRatio: true, // 保持宽高比
+  aspectRatio: 0.1,
   scales: {
     y: {
       beginAtZero: true,
@@ -144,4 +166,64 @@ const groupDataByDate = (data: any[]) => {
 onMounted(() => {
   getData();
 });
+
+let projectProgress = ref<any[]>([]);
+let project = ref<string>("ZM23247-0");
+// 获取数据的数据
+async function getProjectProgress() {
+  const data: any = await useHttp(
+    "/MesProjectProgress/M117GetProjectProgressList",
+    "get",
+    undefined,
+    {
+      project_id: project.value,
+      material_name: "",
+      material_code: "",
+      equipment_code: "",
+      work_order_type: "",
+      start_time: "",
+      end_time: "",
+      status: "",
+      PageIndex: "1",
+      PageSize: "3000",
+      SortedBy: "id",
+      SortType: "1",
+    }
+  );
+  projectProgress.value = data.data.pageList.map((item: any) => {
+    item.delivery_date = item.delivery_date.substring(0, 10);
+    return item;
+  });
+}
+onMounted(() => {
+  getProjectProgress();
+});
+function calculateProgress(item: any) {
+  let machineProgress = 0;
+  let assembleProgress = 0;
+
+  // 避免除以0的情况
+  if (item.machine_total_quantity > 0) {
+    machineProgress =
+      item.machine_quantity_completed / item.machine_total_quantity;
+  }
+
+  if (item.assemble_total_quantity > 0) {
+    assembleProgress =
+      item.assemble_quantity_completed / item.assemble_total_quantity;
+  }
+
+  // 如果加工总量和装配总量都为0，则直接返回进度为0%
+  if (item.machine_total_quantity === 0 && item.assemble_total_quantity === 0) {
+    return "0%";
+  }
+
+  // 计算总进度
+  const totalProgress =
+    (machineProgress * item.machine_proportion +
+      assembleProgress * item.assemble_proportion) /
+    (item.machine_proportion + item.assemble_proportion);
+
+  return Math.round(totalProgress * 100) + "%";
+}
 </script>
