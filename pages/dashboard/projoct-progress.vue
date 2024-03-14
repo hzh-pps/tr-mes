@@ -57,7 +57,7 @@ async function getProjectProgress() {
       end_time: "",
       status: "",
       PageIndex: "1",
-      PageSize: "30",
+      PageSize: "3000",
       SortedBy: "id",
       SortType: "1",
     }

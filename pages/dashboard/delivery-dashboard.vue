@@ -35,7 +35,6 @@ import {
   LineController,
   BarController, // 注册Line控制器
 } from "chart.js";
-import { ref } from "vue";
 
 // 注册所需的组件
 ChartJS.register(
