@@ -14,6 +14,11 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // 如果目标路由为 /auth/forget-password
   if (to.path === "/auth/forget-password") return;
 
+  // 如果目标路由为 /auth/forget-password
+  if (to.path === "/dashboard/project-progress-dashboard") return;
+
+  // 如果目标路由为 /auth/forget-password
+  if (to.path === "/dashboard/delivery-dashboard") return;
   // 如果目标路由为除上述路由的其他路由，但没有权限，则跳转到登录
   if (!token.value) return navigateTo("/auth/login");
 
