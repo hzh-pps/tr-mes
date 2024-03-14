@@ -167,6 +167,15 @@ watch(project, () => {
   getData();
 });
 onMounted(() => {
-  getData();
+  // 获取 token
+  const token = useCookie("token");
+  if (!token.value) {
+    useCookie("token").value =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0MSIsIm5hbWUiOiLog6Hlv5fmtbciLCJvcmdfdGFnIjoiIiwiZXhwaXJlcyI6IjE3MTAzODQxODYiLCJleHAiOjE3MTAzODQxODYsImlzcyI6IllZRiIsImF1ZCI6IkFzcE5ldENvcmVVc2VyIn0.aovLfvANWtfAHt4yGD0cPF0A8xtEP9nGA8pUwrYpgGY";
+  }
+  // 使用setTimeout来实现只执行一次的定时器
+  setTimeout(() => {
+    getData();
+  }, 1000); // 3秒后执行getData方法
 });
 </script>
