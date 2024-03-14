@@ -6,7 +6,7 @@
     <v-col cols="12">
       <div
         style="
-          height: 600px;
+          height: 700px;
           width: 100%;
           display: flex;
           justify-content: center;
