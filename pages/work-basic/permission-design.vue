@@ -152,7 +152,7 @@ function showAddBtn(item: any) {
                 size="large"
                 @click="showAdd"
               >
-                新增文件夹
+                新增菜单
               </v-btn>
             </div>
           </v-col>
@@ -187,7 +187,7 @@ function showAddBtn(item: any) {
               v-if="folderInfo"
               @click="showAddPage"
             >
-              新增页面权限
+              新增页面
             </v-btn>
           </v-col>
           <v-col cols="12">
@@ -207,7 +207,7 @@ function showAddBtn(item: any) {
                         size="large"
                         @click="showAddBtn(item)"
                       >
-                        新增按钮权限
+                        新增功能
                       </v-btn>
                     </v-col>
                     <v-col cols="12">

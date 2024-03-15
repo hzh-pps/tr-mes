@@ -172,7 +172,9 @@ async function getRoleData() {
     "get",
     undefined
   );
-  roleList.value = data.data.filter((item: any) => item.status === true);
+  roleList.value = data.data.filter(
+    (item: any) => item.status === true && item.role_name !== "超级管理员"
+  );
 }
 //分配角色
 function showAssign(item: any) {

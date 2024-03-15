@@ -253,7 +253,9 @@ async function batchWork() {
 
     //获取到当前选择的数据
     innerTableSelectData.value = [...selected.value];
-
+    innerTableSelectData.value.forEach((item: any) => {
+      item.newKey = "N";
+    });
     mcodeName.value = innerTableSelectData.value
       .map((item: any) => item.mdescription)
       .join(",");
@@ -313,6 +315,9 @@ async function showProcessDialog(item: any) {
     await getProduceGroup();
     //将点击的哪行数据存到选择数据中
     innerTableSelectData.value.push(item);
+    innerTableSelectData.value.forEach((item: any) => {
+      item.newKey = "N";
+    });
     mcodeName.value = innerTableSelectData.value
       .map((item: any) => item.mdescription)
       .join(",");
@@ -464,9 +469,10 @@ async function saveTicket() {
           procedure_order_id: index + 1,
           status: "已审核待排产",
           required_inspection: _item.rsv3,
+          station_ids: item.newKey,
           employee_id: "",
           employee_name: "",
-          supplier_name:item.supplier_name,
+          supplier_name: item.supplier_name,
         });
       });
     });
@@ -2763,6 +2769,16 @@ const handleDrop2 = (e: DragEvent) => {
                           是否质检：
                           <v-switch
                             v-model="item.rsv3"
+                            hide-details
+                            color="red"
+                            true-value="Y"
+                            false-value="N"
+                          ></v-switch>
+                        </div>
+                        <div style="flex-basis: 20%">
+                          是否跳过：
+                          <v-switch
+                            v-model="item.newKey"
                             hide-details
                             color="red"
                             true-value="Y"

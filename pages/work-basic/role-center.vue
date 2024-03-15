@@ -45,7 +45,9 @@ async function getRoleData() {
     "get",
     undefined
   );
-  roleList.value = data.data;
+  roleList.value = data.data.filter(
+    (item: any) => item.role_name !== "超级管理员"
+  );
 }
 onMounted(() => {
   getRoleData();
