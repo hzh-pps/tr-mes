@@ -3269,7 +3269,7 @@ const handleDrop2 = (e: DragEvent) => {
     </v-dialog>
 
     <!-- 检查新建明细 -->
-    <v-dialog v-model="addDetailDialog3" min-width="1400px" width="560px">
+    <v-dialog v-model="addDetailDialog3" min-width="1600px" width="560px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 检查新建的明细信息 </v-toolbar-title>
