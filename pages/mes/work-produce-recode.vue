@@ -574,7 +574,7 @@ async function getDeliverList() {
       material_name: searchName.value,
       dispatch_order: searchDO.value,
       PageIndex: 1,
-      PageSize: 999999,
+      PageSize: 1000,
       SortType: 1,
       SortedBy: "dispatch_order",
       status: "已排产待执行,已执行在生产",
