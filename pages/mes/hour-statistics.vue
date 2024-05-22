@@ -52,9 +52,9 @@ let headers = ref<any[]>([
     filterable: true,
   },
   {
-    title: "工作人数",
+    title: "工作人员",
     align: "center",
-    key: "employee_number",
+    key: "employee_name",
     sortable: false,
     filterable: true,
   },
@@ -83,8 +83,12 @@ let searchWorkHid = ref<any>("");
 let searchWorkDid = ref<any>("");
 let searchOrder = ref<any>("");
 let searchCenterName = ref<any>("");
-let searchStartTime = ref<any>(null);
-let searchEndTime = ref<any>(null);
+let searchEmployeeName = ref<any>("");
+
+let nowDate = new Date();
+nowDate.setDate(nowDate.getDate() - 7);
+let searchStartTime = nowDate.toISOString().substring(0, 10);
+let searchEndTime = new Date().toISOString().substring(0, 10);
 
 //调用接口
 async function getHourDate() {
@@ -98,8 +102,9 @@ async function getHourDate() {
       workorder_did: searchWorkDid.value,
       dispatch_order: searchOrder.value,
       work_center_name: searchCenterName.value,
-      start_time: searchStartTime.value,
-      end_time: searchEndTime.value,
+      employee_name: searchEmployeeName.value,
+      start_time: searchStartTime,
+      end_time: searchEndTime,
     }
   );
   hourList.value = data.data.sort((a: any, b: any) => {
@@ -121,8 +126,9 @@ function resetFilter() {
     (searchWorkDid.value = ""),
     (searchOrder.value = ""),
     (searchCenterName.value = ""),
-    (searchStartTime.value = null),
-    (searchEndTime.value = null);
+    (searchStartTime = nowDate.toISOString().substring(0, 10)),
+    (searchEndTime = new Date().toISOString().substring(0, 10)),
+    (searchEmployeeName.value = "");
   hour.value = 0;
   getHourDate();
 }
@@ -224,7 +230,17 @@ function showDetail(item: any, obj: any) {
         @keydown.enter="filter()"
       ></v-text-field>
     </v-col>
-
+    <v-col cols="3">
+      <v-text-field
+        label="员工姓名"
+        v-model="searchEmployeeName"
+        variant="outlined"
+        density="compact"
+        hide-details
+        class="mt-2"
+        @keydown.enter="filter()"
+      ></v-text-field>
+    </v-col>
     <v-col cols="12">
       <v-row>
         <v-col cols="9">
