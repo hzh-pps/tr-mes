@@ -539,6 +539,7 @@ function resetFilter1() {
   searchMaterialDesc.value = "";
   searchLot.value = "";
   searchSkuSpec.value = "";
+  selected.value = [];
   getInventoryData();
 }
 //打印
