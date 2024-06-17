@@ -256,6 +256,8 @@ function resetDetail() {
 //存储当前下的清单编号
 let orderCode = ref<string>("");
 let status = ref<string>("");
+let areaCode = ref<number>();
+let warehouseCode = ref<string>("");
 watch(orderCode, function () {
   getDateDetail();
 });
@@ -293,6 +295,8 @@ async function getDate() {
 function showDetail(item: any, obj: any) {
   orderCode.value = obj.item.raw.out_order_num;
   status.value = obj.item.raw.order_status;
+  areaCode.value = obj.item.raw.area_code;
+  warehouseCode.value = obj.item.raw.warehouse_code;
 }
 
 let detailList = ref<any[]>([]);
@@ -509,8 +513,8 @@ async function getInventoryData() {
   const data: any = await useHttp("/wmsInventory/G115condition_query", "post", {
     container_id: searchCtnId.value,
     place_code: searchPlaceId.value,
-    warehouse_code: "",
-    area_code: "",
+    warehouse_code: warehouseCode.value,
+    area_code: areaCode.value,
     sku: searchMaterial.value,
     sku_desc: searchMaterialDesc.value,
     indateTo: "",
@@ -539,6 +543,7 @@ function resetFilter1() {
   searchMaterialDesc.value = "";
   searchLot.value = "";
   searchSkuSpec.value = "";
+  selected.value = [];
   getInventoryData();
 }
 //打印

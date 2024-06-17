@@ -23,8 +23,19 @@ onMounted(() => {
     opacity: 0,
     duration: 1,
   });
+  // 添加全局键盘事件监听器
+  window.addEventListener("keydown", handleGlobalEnterKey);
 });
-
+onUnmounted(() => {
+  // 移除全局键盘事件监听器
+  window.removeEventListener("keydown", handleGlobalEnterKey);
+});
+// 定义 handleGlobalEnterKey 函数
+const handleGlobalEnterKey = (event: KeyboardEvent) => {
+  if (event.key === "Enter") {
+    debouncePasswordLogin();
+  }
+};
 // 获取路由对象
 const router = useRouter();
 // 获取消息条对象
