@@ -87,8 +87,8 @@ let searchEmployeeName = ref<any>("");
 
 let nowDate = new Date();
 nowDate.setDate(nowDate.getDate() - 7);
-let searchStartTime = nowDate.toISOString().substring(0, 10);
-let searchEndTime = new Date().toISOString().substring(0, 10);
+let searchStartTime = ref("");
+let searchEndTime = ref("");
 
 //调用接口
 async function getHourDate() {
@@ -103,8 +103,8 @@ async function getHourDate() {
       dispatch_order: searchOrder.value,
       work_center_name: searchCenterName.value,
       employee_name: searchEmployeeName.value,
-      start_time: searchStartTime,
-      end_time: searchEndTime,
+      start_time: searchStartTime.value,
+      end_time: searchEndTime.value,
     }
   );
   hourList.value = data.data.sort((a: any, b: any) => {
@@ -114,6 +114,8 @@ async function getHourDate() {
   });
 }
 onMounted(() => {
+  searchStartTime.value = nowDate.toISOString().substring(0, 10);
+  searchEndTime.value = new Date().toISOString().substring(0, 10);
   getHourDate();
 });
 async function filter() {
@@ -126,8 +128,8 @@ function resetFilter() {
     (searchWorkDid.value = ""),
     (searchOrder.value = ""),
     (searchCenterName.value = ""),
-    (searchStartTime = nowDate.toISOString().substring(0, 10)),
-    (searchEndTime = new Date().toISOString().substring(0, 10)),
+    (searchStartTime.value = nowDate.toISOString().substring(0, 10)),
+    (searchEndTime.value = new Date().toISOString().substring(0, 10)),
     (searchEmployeeName.value = "");
   hour.value = 0;
   getHourDate();
