@@ -51,8 +51,8 @@ dependencies:
     specifier: ^3.1.0
     version: 3.1.0(vue@3.3.4)
   vue3-puzzle-vcode:
-    specifier: ^1.1.7
-    version: 1.1.7
+    specifier: 1.1.2-nuxt
+    version: 1.1.2-nuxt
   vue3-tree-org:
     specifier: ^4.2.2
     version: 4.2.2(vue@3.3.4)
@@ -6304,8 +6304,8 @@ packages:
       vue: 3.3.4
     dev: false
 
-  /vue3-puzzle-vcode@1.1.7:
-    resolution: {integrity: sha512-mW780dz7HKjrElnE60CeYSeHGidKBKHoMjTDYfqF21330rTkFOsfDK1FQKZ22MktgMtTEoS/imfpEDlM1cxY/g==}
+  /vue3-puzzle-vcode@1.1.2-nuxt:
+    resolution: {integrity: sha512-CObST6YwMmNqYQZV9Gd3G4ZbECsm+C0FKv0IMhufkAr1St9lvbpNAUQWDN0R1eyEYvQDbWel6u0pL0KWT44KnA==}
     dev: false
 
   /vue3-tree-org@4.2.2(vue@3.3.4):
