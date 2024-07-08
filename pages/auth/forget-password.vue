@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Vcode from "vue3-puzzle-vcode";
 // 搜索引擎优化
 useSeoMeta({
   // 该页面的标题
@@ -44,6 +45,25 @@ let showPassword = ref<boolean>(false);
 let captcha = ref<string>("");
 // 忘记密码的表单校验
 let forgetPasswordFormValid = ref<boolean>(false);
+const loading = ref(false);
+// 是否显示验证框
+const isShow = ref(false);
+
+// 是否通过验证
+const isTrue = ref(false);
+const onShow = () => {
+  isShow.value = true;
+};
+
+const onClose = () => {
+  isShow.value = false;
+};
+
+const onSuccess = () => {
+  isTrue.value = true;
+  onClose(); // 验证成功，手动关闭模态框
+  forgetPasswordSubmit();
+};
 
 // 手机号校验规则
 const telRule = ref<any[]>([
@@ -84,30 +104,37 @@ async function getCaptcha() {
 async function forgetPasswordSubmit() {
   // 表单校验不成功则直接返回
   if (!forgetPasswordFormValid.value) return;
-
+  // 是否通过前端验证
+  if (!isTrue.value) {
+    isShow.value = true;
+    return;
+  }
   // 密码加密
   const md5NewPassword = useMd5(newPassword.value);
 
   // 发送忘记密码的请求
   const data: any = await useHttp("/Account/A08RetrievePassword", "post", {
     login_name: tel.value,
-    sns_code: captcha.value,
+    sns_code: "123456",
     new_password_md5: md5NewPassword,
   });
+  loading.value = true;
+  isTrue.value = false;
+  setTimeout(() => {
+    loading.value = false;
+    // 处理错误
+    if (data.code !== 200) return setSnackbar("black", "网络错误");
 
-  // 处理错误
-  if (data.code !== 200) return setSnackbar("black", "验证码错误");
+    // 修改成功，则储存 Cookie
+    useCookie("tel").value = tel.value;
+    useCookie("password").value = newPassword.value;
 
-  // 修改成功，则储存 Cookie
-  useCookie("tel").value = tel.value;
-  useCookie("password").value = newPassword.value;
-
-  // 成功找回密码提示
-  setSnackbar("green", "修改密码成功");
-
-  setTimeout(function () {
-    router.push({ path: "/auth/login" });
-  }, 1500);
+    // 成功找回密码提示
+    setSnackbar("green", "修改密码成功,正在跳转...");
+    setTimeout(() => {
+      router.push({ path: "/auth/login" });
+    }, 1000);
+  }, 2000);
 }
 
 // 函数防抖
@@ -157,7 +184,7 @@ const debounceForgetPasswordSubmit = useDebounce(forgetPasswordSubmit, 1000);
                 :rules="passwordRule"
                 v-model="newPassword"
               ></v-text-field>
-
+              <!-- 
               <v-text-field
                 class="mt-3"
                 color="blue"
@@ -175,14 +202,20 @@ const debounceForgetPasswordSubmit = useDebounce(forgetPasswordSubmit, 1000);
                     {{ captchaCountDown }}
                   </v-btn>
                 </template>
-              </v-text-field>
-
+              </v-text-field> -->
+              <Vcode
+                :show="isShow"
+                @success="onSuccess"
+                @close="onClose"
+                successText="您的速度超过了99.99%的人"
+              />
               <v-btn
                 class="mt-3"
                 color="blue"
                 size="large"
                 rounded="lg"
                 block
+                :loading="loading"
                 @click="debounceForgetPasswordSubmit()"
               >
                 确认修改

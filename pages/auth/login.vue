@@ -214,7 +214,7 @@ const debounceCaptchaLogin = useDebounce(captchaLogin, 1000);
         <v-card flat max-width="560" min-width="400" class="mx-auto">
           <v-tabs v-model="tab" color="blue" align-tabs="center">
             <v-tab class="text-h6" value="密码登陆">密码登陆</v-tab>
-            <v-tab class="text-h6" value="验证码登陆">验证码登陆</v-tab>
+            <!-- <v-tab class="text-h6" value="验证码登陆">验证码登陆</v-tab> -->
           </v-tabs>
 
           <v-card-text>
@@ -284,7 +284,7 @@ const debounceCaptchaLogin = useDebounce(captchaLogin, 1000);
                 </v-form>
               </v-window-item>
 
-              <v-window-item value="验证码登陆">
+              <!-- <v-window-item value="验证码登陆">
                 <v-form v-model="captchaFormValid" class="mt-6">
                   <v-text-field
                     color="blue"
@@ -338,7 +338,7 @@ const debounceCaptchaLogin = useDebounce(captchaLogin, 1000);
                     登陆
                   </v-btn>
                 </v-form>
-              </v-window-item>
+              </v-window-item> -->
             </v-window>
           </v-card-text>
         </v-card>

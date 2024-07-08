@@ -50,6 +50,9 @@ dependencies:
   vue3-lottie:
     specifier: ^3.1.0
     version: 3.1.0(vue@3.3.4)
+  vue3-puzzle-vcode:
+    specifier: ^1.1.7
+    version: 1.1.7
   vue3-tree-org:
     specifier: ^4.2.2
     version: 4.2.2(vue@3.3.4)
@@ -1909,7 +1912,7 @@ packages:
       '@vue/composition-api':
         optional: true
     dependencies:
-      vue-demi: 0.14.6(vue@3.3.4)
+      vue-demi: 0.14.8(vue@3.3.4)
     transitivePeerDependencies:
       - vue
     dev: false
@@ -6243,6 +6246,21 @@ packages:
       vue: 3.3.4
     dev: false
 
+  /vue-demi@0.14.8(vue@3.3.4):
+    resolution: {integrity: sha512-Uuqnk9YE9SsWeReYqK2alDI5YzciATE0r2SkA6iMAtuXvNTMNACJLJEXNXaEy94ECuBe4Sk6RzRU80kjdbIo1Q==}
+    engines: {node: '>=12'}
+    hasBin: true
+    requiresBuild: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+    dependencies:
+      vue: 3.3.4
+    dev: false
+
   /vue-devtools-stub@0.1.0:
     resolution: {integrity: sha512-RutnB7X8c5hjq39NceArgXg28WZtZpGc3+J16ljMiYnFhKvd8hITxSWQSQ5bvldxMDU6gG5mkxl1MTQLXckVSQ==}
     dev: true
@@ -6284,6 +6302,10 @@ packages:
       lodash-es: 4.17.21
       lottie-web: 5.12.2
       vue: 3.3.4
+    dev: false
+
+  /vue3-puzzle-vcode@1.1.7:
+    resolution: {integrity: sha512-mW780dz7HKjrElnE60CeYSeHGidKBKHoMjTDYfqF21330rTkFOsfDK1FQKZ22MktgMtTEoS/imfpEDlM1cxY/g==}
     dev: false
 
   /vue3-tree-org@4.2.2(vue@3.3.4):

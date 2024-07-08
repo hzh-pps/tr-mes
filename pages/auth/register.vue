@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Vcode from "vue3-puzzle-vcode";
 // 搜索引擎优化
 useSeoMeta({
   // 该页面的标题
@@ -48,7 +49,25 @@ let showPassword = ref<boolean>(false);
 let captcha = ref<string>("");
 // 手机号登陆的表单校验
 let registerFormValid = ref<boolean>(false);
+const loading = ref(false);
+// 是否显示验证框
+const isShow = ref(false);
 
+// 是否通过验证
+const isTrue = ref(false);
+const onShow = () => {
+  isShow.value = true;
+};
+
+const onClose = () => {
+  isShow.value = false;
+};
+
+const onSuccess = () => {
+  isTrue.value = true;
+  onClose(); // 验证成功，手动关闭模态框
+  registerSubmit();
+};
 // 姓名校验规则
 const nameRule = ref<any[]>([
   (v: any) => !!v || "姓名不能为空",
@@ -82,8 +101,7 @@ const passwordRule = ref<any[]>([
 // 获取验证码
 async function getCaptcha() {
   // 表单校验不成功则直接返回
-  if (!registerFormValid.value)
-    return setSnackbar("black", "请先完成表单，再点击获取验证码");
+  if (!registerFormValid.value) return setSnackbar("black", "请先完成表单");
 
   // 验证码倒计时
   setCountDown(300);
@@ -104,6 +122,11 @@ async function getCaptcha() {
 async function registerSubmit() {
   // 如果注册表单校验失败，则直接返回
   if (!registerFormValid.value) return;
+  // 是否通过前端验证
+  if (!isTrue.value) {
+    isShow.value = true;
+    return;
+  }
 
   // 密码加密
   const md5Password = useMd5(password.value);
@@ -113,26 +136,28 @@ async function registerSubmit() {
     user_name: name.value,
     phone_num: tel.value,
     email_address: email.value,
-    verify_code: captcha.value,
+    verify_code: "123456",
     platform: "PC",
     password: md5Password,
   });
-
-  // 如果账号已存在
-  if (data.code === 1005) return setSnackbar("black", "验证码错误");
-
-  // 储存 Cookie
-  useCookie("tel").value = tel.value;
-  useCookie("password").value = password.value;
-  useCookie("name").value = data.user_name;
-  useCookie("token").value = data.token;
-  useCookie("refreshToken").value = data.refresh_token;
-
-  // 注册成功
-  setSnackbar("green", "注册成功，正在跳转...");
+  loading.value = true;
 
   setTimeout(function () {
-    router.push({ path: "/auth/login" });
+    loading.value = false;
+    // 如果账号已存在
+    if (data.code === 1005) return setSnackbar("black", "网络错误");
+
+    // 储存 Cookie
+    useCookie("tel").value = tel.value;
+    useCookie("password").value = password.value;
+    useCookie("name").value = data.user_name;
+    useCookie("token").value = data.token;
+    useCookie("refreshToken").value = data.refresh_token;
+    // 注册成功
+    setSnackbar("green", "注册成功，正在跳转...");
+    setTimeout(() => {
+      router.push({ path: "/auth/login" });
+    }, 1000);
   }, 1500);
 }
 
@@ -213,7 +238,7 @@ const debounceRegisterSubmit = useDebounce(registerSubmit, 1000);
                 v-model="password"
               ></v-text-field>
 
-              <v-text-field
+              <!-- <v-text-field
                 class="mt-3"
                 color="blue"
                 density="comfortable"
@@ -230,7 +255,9 @@ const debounceRegisterSubmit = useDebounce(registerSubmit, 1000);
                     {{ captchaCountDown }}
                   </v-btn>
                 </template>
-              </v-text-field>
+              </v-text-field> -->
+              <Vcode :show="isShow" @success="onSuccess" @close="onClose" />
+              <!-- <v-btn v-show="!isTrue" @click="onShow">开始验证</v-btn> -->
 
               <v-btn
                 class="mt-3"
@@ -238,6 +265,7 @@ const debounceRegisterSubmit = useDebounce(registerSubmit, 1000);
                 size="large"
                 rounded="lg"
                 block
+                :loading="loading"
                 @click="debounceRegisterSubmit()"
               >
                 注册

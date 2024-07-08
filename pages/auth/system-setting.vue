@@ -29,7 +29,7 @@ onMounted(() => {
 <template>
   <div
     style="
-      background: linear-gradient(to bottom, red, blue);
+      background: linear-gradient(to bottom, #065279, #8d4bbb);
       height: 100vh;
       width: 100%;
     "
@@ -39,12 +39,17 @@ onMounted(() => {
       style="
         height: 100vh;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         text-shadow: 5px 5px 5px #ff0000;
       "
     >
-      当前版本信息:1.0.9
+      <div>当前版本:202407-1</div>
+      <div>
+        当前版本修改内容:
+        修改了注册和忘记密码的俩个页面的操作，具体实现由发送手机验证码改为前端滑块验证
+      </div>
     </div>
   </div>
 </template>
