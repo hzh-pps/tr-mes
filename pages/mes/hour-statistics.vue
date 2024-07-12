@@ -52,6 +52,20 @@ let headers = ref<any[]>([
     filterable: true,
   },
   {
+    title: "物料名称",
+    align: "center",
+    key: "material_name",
+    sortable: false,
+    filterable: true,
+  },
+  {
+    title: "图纸号",
+    align: "center",
+    key: "material_id",
+    sortable: false,
+    filterable: true,
+  },
+  {
     title: "工作人员",
     align: "center",
     key: "employee_name",
@@ -345,7 +359,7 @@ function showDetail(item: any, obj: any) {
                 <div class="d-flex flex-column">
                   <div>状态：结束</div>
                   <div>员工姓名: {{ expanded.employee_name }}</div>
-                  <div>时间: {{ expanded.temporal_interval.slice(-19) }}</div>
+                  <div>时间: {{ expanded.temporal_interval.slice(-18) }}</div>
                 </div>
               </v-stepper-item>
             </v-stepper-header>
