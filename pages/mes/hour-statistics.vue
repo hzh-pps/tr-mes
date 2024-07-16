@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import * as XLSX from "xlsx";
+
 useSeoMeta({
   // 该页面的标题
   title: "工时统计",
@@ -126,6 +128,37 @@ async function getHourDate() {
     const bId = parseInt(b.record_id.substring(3));
     return bId - aId;
   });
+}
+// 导出数据
+function exportToExcel() {
+  // 创建中文表头映射
+  const headerMap = [
+    { key: "project_code", title: "项目号" },
+    { key: "workorder_hid", title: "工单编号" },
+    { key: "workorder_did", title: "明细编号" },
+    { key: "dispatch_order", title: "派工单号" },
+    { key: "work_center_name", title: "工作中心" },
+    { key: "material_name", title: "物料名称" },
+    { key: "material_id", title: "图纸号" },
+    { key: "employee_name", title: "工作人员" },
+    { key: "temporal_interval", title: "工作时间" },
+    { key: "work_time", title: "工时" },
+  ];
+
+  // 将数据转换为带有中文表头的数组
+  const formattedData: any = hourList.value.map((item) => {
+    const formattedItem: { [key: string]: any } = {}; // 明确索引签名
+    headerMap.forEach((header: any) => {
+      formattedItem[header.title] = item[header.key];
+    });
+    return formattedItem;
+  });
+
+  // 使用xlsx库创建和下载Excel文件
+  const ws = XLSX.utils.json_to_sheet(formattedData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "工时统计");
+  XLSX.writeFile(wb, "工时统计.xlsx");
 }
 onMounted(() => {
   searchStartTime.value = nowDate.toISOString().substring(0, 10);
@@ -281,6 +314,14 @@ function showDetail(item: any, obj: any) {
             @click="showSum"
           >
             工时统计
+          </v-btn>
+          <v-btn
+            color="blue-darken-2"
+            class="mr-2 mt-2"
+            size="default"
+            @click="exportToExcel"
+          >
+            导出Excel
           </v-btn>
         </v-col>
         <v-col cols="3">
