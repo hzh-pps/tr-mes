@@ -503,7 +503,8 @@ async function addDetailSucces() {
   addShowDialog.value = false;
   addDialog.value = false;
 }
-
+// 函数防抖，防止连续点击创建多条数据，多次调用后台接口，提升性能
+const debounceAddDetailSucces = useDebounce(addDetailSucces, 1000);
 let banInfo = ref<any>(null);
 // 取消委外
 function showBan(item: any) {
@@ -1253,7 +1254,7 @@ async function print() {
             color="blue-darken-2"
             size="large"
             class="mr-2"
-            @click="addDetailSucces()"
+            @click="debounceAddDetailSucces()"
           >
             确认
           </v-btn>
