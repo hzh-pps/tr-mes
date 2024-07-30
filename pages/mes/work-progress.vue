@@ -19,11 +19,15 @@ useSeoMeta({
 definePageMeta({
   keepalive: true,
 });
+// 获取消息条对象
+const { snackbarShow, snackbarColor, snackbarText, setSnackbar } =
+  useSnackbar();
 //工单类型
 let workTypeList = ref<any[]>([]);
 let workTypeInFo = ref<string>("机加,钣金,电器装配,模组装配,总装,其他");
 let tab1 = ref<any>(null);
 let tab2 = ref<any>(null);
+const dialog = ref<boolean>(false);
 
 let nowDate = new Date();
 nowDate.setFullYear(nowDate.getFullYear() - 1);
@@ -179,6 +183,29 @@ async function printWorkOrder(item: any) {
   });
   printList.value = [];
 }
+
+const info = ref<any>();
+function showDialog(item: any) {
+  info.value = {
+    dispatch_order: item.dispatch_order,
+    start_name: item.start_name,
+    isStart: item.start_name === null || item.start_name === "" ? "N" : "Y",
+    hour: "",
+  };
+  console.log(info.value);
+  dialog.value = true;
+}
+// 保存
+async function endTask() {
+  if (info.value.hour === "") {
+    setSnackbar("red", "请输入工作时长");
+    return;
+  }
+  if (info.value.start_name === "" || info.value.start_name === null) {
+    setSnackbar("red", "请输入工作人员名称");
+    return;
+  }
+}
 </script>
 
 <template>
@@ -332,7 +359,22 @@ async function printWorkOrder(item: any) {
                             }}
                           </div>
                           <!-- 计划交付日期 -->
-                          <div style="flex-basis: 15%">
+                          <div
+                            style="flex-basis: 15%"
+                            v-if="
+                              element.reported_quantity >=
+                              element.planned_total_quantity
+                            "
+                          >
+                            计划交付：
+                            <span>
+                              {{
+                                element.mes_workorderdetaildata
+                                  .estimated_delivery_date
+                              }}
+                            </span>
+                          </div>
+                          <div v-else style="flex-basis: 15%">
                             计划交付：
                             <span
                               :style="{
@@ -442,18 +484,21 @@ async function printWorkOrder(item: any) {
                                 </div>
 
                                 <div
-                                  style="flex-basis: 15%"
+                                  style="flex-basis: 10%"
                                   v-if="item_.dispatch_order"
                                 >
-                                  派工单号：{{ item_.dispatch_order }}
+                                  {{ item_.dispatch_order }}
                                 </div>
-                                <div style="flex-basis: 15%" v-else>
-                                  派工单号：任务未派工
+                                <div style="flex-basis: 10%" v-else>
+                                  任务未派工
                                 </div>
-                                <div style="flex-basis: 10%">
-                                  工序顺序：{{ item_.procedure_order_id }}
+                                <div style="flex-basis: 5cap">
+                                  {{ item_.procedure_order_id }}
                                 </div>
-                                <div
+                                <div style="flex-basis: 18%">
+                                  工序：[{{ item_.procedure_description }}]
+                                </div>
+                                <!-- <div
                                   v-if="
                                     item_.reported_quantity >=
                                     item_.planned_quantity
@@ -485,10 +530,8 @@ async function printWorkOrder(item: any) {
                                   >
                                     {{ item_.planned_completion_time }}
                                   </span>
-                                </div>
-                                <div style="flex-basis: 18%">
-                                  工序：[{{ item_.procedure_description }}]
-                                </div>
+                                </div> -->
+
                                 <div style="flex-basis: 10%">
                                   委外：{{
                                     item_.defaul_outsource === "N" ? "否" : "是"
@@ -513,13 +556,26 @@ async function printWorkOrder(item: any) {
                                   合格数量：{{ item_.reported_quantity }}
                                 </div>
                                 <div
-                                  style="flex-basis: 10%"
+                                  style="flex-basis: 20%"
                                   v-if="item_.work_center_name"
                                 >
                                   @{{ item_.work_center_name }}
                                 </div>
-                                <div style="flex-basis: 10%" v-else>
+                                <div style="flex-basis: 20%" v-else>
                                   未分配工作中心
+                                </div>
+                                <div style="flex-basis: 12%">
+                                  <v-btn
+                                    v-if="
+                                      item_.reported_quantity <
+                                      item_.planned_quantity
+                                    "
+                                    color="deep-purple-darken-2"
+                                    size="small"
+                                    @click="showDialog(item_)"
+                                  >
+                                    结束任务
+                                  </v-btn>
                                 </div>
                               </div>
                             </template>
@@ -614,4 +670,44 @@ async function printWorkOrder(item: any) {
       </v-card>
     </v-col>
   </v-row>
+  <!-- 工单维护弹框 -->
+  <v-dialog v-model="dialog" min-width="400px" width="1000px">
+    <v-card>
+      <v-toolbar color="blue">
+        <v-toolbar-title> 工单维护 </v-toolbar-title>
+        <v-spacer></v-spacer>
+
+        <v-btn icon @click="dialog = false">
+          <v-icon>fa-solid fa-close</v-icon>
+        </v-btn>
+      </v-toolbar>
+      <v-card-text class="mt-4">
+        <v-row>
+          <v-col cols="6">
+            <v-text-field label="工时" v-model="info.hour"></v-text-field>
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              label="工作人员"
+              :disabled="info.isStart === 'Y'"
+              v-model="info.start_name"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+      </v-card-text>
+
+      <div class="d-flex justify-end mr-6 mb-4">
+        <v-btn color="blue-darken-2" size="large" class="mr-2" @click="endTask">
+          确定
+        </v-btn>
+        <v-btn color="grey" size="large" @click="dialog = false"> 取消 </v-btn>
+      </div>
+    </v-card>
+  </v-dialog>
+  <v-snackbar location="top" v-model="snackbarShow" :color="snackbarColor">
+    {{ snackbarText }}
+    <template v-slot:actions>
+      <v-btn variant="tonal" @click="snackbarShow = false">关闭</v-btn>
+    </template>
+  </v-snackbar>
 </template>

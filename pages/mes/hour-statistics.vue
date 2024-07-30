@@ -307,14 +307,14 @@ function showDetail(item: any, obj: any) {
             @click="resetFilter"
             >重置查询</v-btn
           >
-          <v-btn
+          <!-- <v-btn
             color="blue-darken-2"
             class="mr-2 mt-2"
             size="default"
             @click="showSum"
           >
             工时统计
-          </v-btn>
+          </v-btn> -->
           <v-btn
             color="blue-darken-2"
             class="mr-2 mt-2"

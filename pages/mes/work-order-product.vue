@@ -2324,8 +2324,13 @@ const handleDrop2 = (e: DragEvent) => {
                               "
                               size="small"
                               @click="showProcessDialog(item)"
-                              :color="item.procedure ? 'green' : 'grey'"
-                              >{{ item.procedure ? "可维护" : "未维护" }}
+                              :color="
+                                item.status !== '已分配待排产' &&
+                                item.status !== '新增未分配'
+                                  ? 'grey'
+                                  : 'green'
+                              "
+                              >{{ item.procedure ? "已维护" : "未维护" }}
                               <v-tooltip activator="parent" location="top">{{
                                 item.procedure
                               }}</v-tooltip>
