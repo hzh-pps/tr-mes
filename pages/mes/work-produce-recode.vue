@@ -565,6 +565,15 @@ let searchName = ref<any>(null);
 let searchDO = ref<any>(null);
 //产能视图的数据
 let deliverList = ref<any[]>([]);
+let workClassPage = ref(1);
+watch(workClassPage, () => {
+  getDeliverList();
+});
+//数据库一共存储多少数据
+let workClassPageCount = ref(0);
+let workClassTablePageCount = computed(() => {
+  return Math.ceil(workClassPageCount.value / 10);
+});
 async function getDeliverList() {
   const data: any = await useHttp(
     "/ProductionRecode/M21ProductionRecodeList",
@@ -573,14 +582,14 @@ async function getDeliverList() {
     {
       material_name: searchName.value,
       dispatch_order: searchDO.value,
-      PageIndex: 1,
-      PageSize: 1000,
+      PageIndex: workClassPage.value,
+      PageSize: 10,
       SortType: 1,
       SortedBy: "dispatch_order",
       status: "已排产待执行,已执行在生产",
     }
   );
-
+  workClassPageCount.value = data.data.totalCount;
   deliverList.value = data.data.pageList
     .filter(
       (item: any) => item.dispatch_order !== null && item.dispatch_order !== ""
@@ -1308,6 +1317,14 @@ function assign() {
                     >
                       {{ item.raw.reported_quantity }}
                     </v-progress-circular>
+                  </template>
+                  <template v-slot:bottom>
+                    <div class="text-center pt-2">
+                      <v-pagination
+                        v-model="workClassPage"
+                        :length="workClassTablePageCount"
+                      ></v-pagination>
+                    </div>
                   </template>
                 </v-data-table>
               </v-col>

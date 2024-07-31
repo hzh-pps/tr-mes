@@ -148,8 +148,10 @@ async function showWorkDetail(item: any, _item: any) {
   getWorkDetail();
 }
 let productList = ref<any[]>([]);
+const workInfo = ref<any>({});
 //获取排产数据
 async function getProductList(item: any) {
+  workInfo.value = item;
   const data: any = await useHttp(
     "/ProductionRecode/M21ProductionRecodeList",
     "get",
@@ -188,22 +190,40 @@ const info = ref<any>();
 function showDialog(item: any) {
   info.value = {
     dispatch_order: item.dispatch_order,
-    start_name: item.start_name,
-    isStart: item.start_name === null || item.start_name === "" ? "N" : "Y",
-    hour: "",
+    employee_name: item.start_name,
+    isstart: item.start_name === null || item.start_name === "" ? "N" : "Y",
+    work_time: "",
+    employee_id: "",
   };
-  console.log(info.value);
   dialog.value = true;
 }
 // 保存
 async function endTask() {
-  if (info.value.hour === "") {
+  if (info.value.work_time === "") {
     setSnackbar("red", "请输入工作时长");
     return;
   }
-  if (info.value.start_name === "" || info.value.start_name === null) {
+  if (info.value.employee_name === "" || info.value.employee_name === null) {
     setSnackbar("red", "请输入工作人员名称");
     return;
+  }
+  if (info.value.isstart === "N" && info.value.employee_id === "") {
+    setSnackbar("red", "请输入工作人员工号");
+    return;
+  }
+  //生产记录
+  const data: any = await useHttp(
+    "/ProductionRecode/M124ProductionRecodeList",
+    "post",
+    info.value
+  );
+  if (data.code === 200) {
+    setSnackbar("green", data.msg);
+    dialog.value = false;
+    getProductList(workInfo.value);
+    info.value = {};
+  } else {
+    setSnackbar("red", data.msg);
   }
 }
 </script>
@@ -683,14 +703,21 @@ async function endTask() {
       </v-toolbar>
       <v-card-text class="mt-4">
         <v-row>
-          <v-col cols="6">
-            <v-text-field label="工时" v-model="info.hour"></v-text-field>
+          <v-col cols="4">
+            <v-text-field label="工时" v-model="info.work_time"></v-text-field>
           </v-col>
-          <v-col cols="6">
+          <v-col cols="4">
             <v-text-field
               label="工作人员"
-              :disabled="info.isStart === 'Y'"
-              v-model="info.start_name"
+              :disabled="info.isstart === 'Y'"
+              v-model="info.employee_name"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="4">
+            <v-text-field
+              label="工号"
+              :disabled="info.isstart === 'Y'"
+              v-model="info.employee_id"
             ></v-text-field>
           </v-col>
         </v-row>
