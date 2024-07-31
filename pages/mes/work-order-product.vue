@@ -101,6 +101,8 @@ let productDialog = ref(false);
 let auditDialog = ref(false);
 let processDialog = ref(false);
 let mcodeDialog = ref(false);
+// 标准工时挑选
+let standardDialog = ref(false);
 let deleteProduceDialog = ref(false);
 let dialog = ref(false);
 // 工单搜索
@@ -306,6 +308,25 @@ async function batchWork() {
   processDialog.value = true;
 }
 
+const orderList = ref<any[]>([]);
+// 获取当前工单明细下的派工单的一些数据：工序编号，次数，工艺id
+async function getOrderDetail(item: any) {
+  const data: any = await useHttp(
+    "/ProductionRecode/M126GetProductionRuleBywodid",
+    "get",
+    undefined,
+    {
+      workorder_did: item,
+    }
+  );
+  if (data.code === 200) {
+    orderList.value = data.data;
+  } else {
+    setSnackbar("black", "获取派工单数据失败");
+    orderList.value = [];
+  }
+}
+
 //工序维护
 async function showProcessDialog(item: any) {
   try {
@@ -313,6 +334,7 @@ async function showProcessDialog(item: any) {
     await getProduce();
     //常用工序流程
     await getProduceGroup();
+    await getOrderDetail(item.workorder_did);
     //将点击的哪行数据存到选择数据中
     innerTableSelectData.value.push(item);
     innerTableSelectData.value.forEach((item: any) => {
@@ -341,6 +363,20 @@ async function showProcessDialog(item: any) {
           combinedArray.find((item: any) => chip.toString() === item.rsv2)
         )
         .filter(Boolean);
+
+      // 更新 droppedChips 数组中的元素
+      droppedChips.value.forEach((chip: any) => {
+        // 在 orderList 数组中查找相同工序编号的对象
+        const found: any = orderList.value.find(
+          (item: any) => item.config_code === chip.config_code
+        );
+        if (found) {
+          // 如果找到了，就更新 detail 和 piece 属性
+          chip.detail = found?.detail;
+          chip.piece = found?.piece;
+        }
+      });
+
       chips.value = chips.value.filter(
         (chip) =>
           !workorderHids.some((item: any) => chip.rsv2 === item.toString())
@@ -359,16 +395,75 @@ function cancelProcess() {
   processDialog.value = false;
 }
 
-//点击当前行数据从chips中剔除
-function reduceProcedure(item: any) {
-  if (clickIndex.value < 0) {
-    chips.value.splice(chips.value.indexOf(item), 1);
-    droppedChips.value.push(item);
-  } else {
-    chips.value.splice(chips.value.indexOf(item), 1);
-    droppedChips.value[clickIndex.value].rsv2 =
-      droppedChips.value[clickIndex.value].rsv2 + "," + item.rsv2;
+// 数据库规格数据
+const specificationList = ref<any[]>([]);
+// 选中的规格
+const specification = ref<any>();
+// 每件应该加工多少次
+const piece = ref<number>(0);
+// 选择的工序
+const procedure = ref<any>();
+// 选择工序，并且给工序分配类型和加工次数
+async function reduceProcedure(item: any) {
+  // console.log(item);
+  procedure.value = item;
+  const data = await useHttp(
+    "/MesWorkingTimeRule/M125GetRuleList",
+    "get",
+    undefined,
+    {
+      procedure_type: item.rsv2,
+    }
+  );
+  specificationList.value = data.data;
+  standardDialog.value = true;
+}
+
+// 修改规格
+async function updateStandard(item: any) {
+  reduceProcedure(item);
+  piece.value = item.piece;
+  specification.value = item.detail.id;
+  standardDialog.value = true;
+}
+
+// 保存规格
+async function saveStandard() {
+  if (!specification.value) {
+    return setSnackbar("black", "请选择规格");
   }
+  if (!piece.value) {
+    return setSnackbar("black", "请填写加工次数");
+  }
+
+  let selectedSpecification = specificationList.value.find(
+    (spec) => spec.id === specification.value
+  );
+  // console.log(selectedSpecification);
+  procedure.value.detail = selectedSpecification;
+  procedure.value.piece = piece.value;
+  // 调用接口成功后
+  // 点击当前行数据从chips中剔除
+  const exists = chips.value.some(
+    (chip: any) => chip.config_code === procedure.value.config_code
+  );
+  if (exists) {
+    if (clickIndex.value < 0) {
+      chips.value.splice(chips.value.indexOf(procedure.value), 1);
+      droppedChips.value.push(procedure.value);
+    } else {
+      chips.value.splice(chips.value.indexOf(procedure.value), 1);
+      droppedChips.value[clickIndex.value].rsv2 =
+        droppedChips.value[clickIndex.value].rsv2 + "," + procedure.value.rsv2;
+    }
+  } else {
+    droppedChips.value[clickIndex.value] = procedure.value;
+  }
+
+  standardDialog.value = false;
+  // console.log(droppedChips.value);
+  piece.value = 0;
+  specification.value = null;
 }
 
 //存储将单工序修改为工序组的数据
@@ -473,9 +568,13 @@ async function saveTicket() {
           employee_id: "",
           employee_name: "",
           supplier_name: item.supplier_name,
+          times: _item.piece,
+          workingtime_ruleid: _item.detail.id,
+          piece_number: _item.detail.piece_number,
         });
       });
     });
+    // console.log(tabArr.value);
     //将维护的工序添加到工单明细工序分配数据库
     await useHttp(
       "/ProductionRecode/M22AddProductionRecode",
@@ -521,6 +620,8 @@ async function commonProduce(item: any) {
 //移除选择的常用工序组
 function removeProceDureGroup(item: any) {
   if (item.config_type === "单工序") {
+    item.piece = 0;
+    item.detail = null;
     droppedChips.value.splice(droppedChips.value.indexOf(item), 1);
     chips.value.push(item);
   } else {
@@ -2626,69 +2727,9 @@ const handleDrop2 = (e: DragEvent) => {
         </div>
       </v-card>
     </v-dialog>
-    <!-- 修改工单明细行 -->
-    <v-dialog v-model="editDetailDialog" min-width="400px" width="560px">
-      <v-card>
-        <v-toolbar color="blue">
-          <v-toolbar-title> 修改工单 </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn icon @click="editDetailDialog = false">
-            <v-icon>fa-solid fa-close</v-icon>
-          </v-btn>
-        </v-toolbar>
-        <v-card-text class="mt-4">
-          <v-text-field
-            v-model="operatingTicketDetail.estimated_delivery_date"
-            :rules="dateRule"
-            label="预计交付时间"
-          ></v-text-field>
-          <v-text-field
-            v-model="operatingTicketDetail.actual_delivery_date"
-            :rules="dateRule"
-            label="实际交付时间"
-          ></v-text-field>
-          <v-text-field
-            v-model="operatingTicketDetail.standard_time"
-            label="标准工时"
-          ></v-text-field>
-          <v-text-field
-            v-model="operatingTicketDetail.actual_time"
-            label="实际工时"
-          ></v-text-field>
-          <v-text-field
-            v-model="operatingTicketDetail.planned_quantity"
-            label="计划数量"
-            :rules="numberRule"
-          ></v-text-field>
-          <v-text-field
-            v-model="operatingTicketDetail.reported_quantity"
-            label="实际报工数量"
-            :rules="numberRule"
-          ></v-text-field>
-          <v-select
-            label="单位"
-            :items="units"
-            v-model="operatingTicketDetail.unit"
-          ></v-select>
-        </v-card-text>
 
-        <div class="d-flex justify-end mr-6 mb-4">
-          <v-btn
-            color="blue-darken-2"
-            size="large"
-            class="mr-2"
-            @click="editTicketDetail()"
-          >
-            确认修改
-          </v-btn>
-          <v-btn color="grey" size="large" @click="editDetailDialog = false">
-            取消
-          </v-btn>
-        </div>
-      </v-card>
-    </v-dialog>
     <!-- 工序维护弹框 -->
-    <v-dialog v-model="processDialog" min-width="400px" width="800px">
+    <v-dialog v-model="processDialog" min-width="1000px" width="1000px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> {{ mcodeName }}工序维护 </v-toolbar-title>
@@ -2756,10 +2797,16 @@ const handleDrop2 = (e: DragEvent) => {
                   <v-list-item-title
                     ><template v-slot:default>
                       <div class="d-flex">
-                        <div style="flex-basis: 30%">
+                        <div style="flex-basis: 20%">
                           {{ index + 1 + "." + item.rsv2 }}
                         </div>
-
+                        <div style="flex-basis: 30%">
+                          规格与次数：
+                          <div class="mt-2">
+                            {{ item?.detail?.specification }}/
+                            {{ item?.piece }}
+                          </div>
+                        </div>
                         <div style="flex-basis: 20%">
                           是否委外：
                           <v-switch
@@ -2795,10 +2842,13 @@ const handleDrop2 = (e: DragEvent) => {
                   <v-divider :thickness="1"></v-divider>
                   <template v-slot:append>
                     <div class="d-flex">
-                      <v-icon
+                      <!-- <v-icon
                         v-if="item.config_type === '单工序'"
                         v-show="clickIndex < 0"
                         @click="addName(item, index)"
+                        >fa-solid fa-pen-to-square
+                      </v-icon> -->
+                      <v-icon @click="updateStandard(item)"
                         >fa-solid fa-pen-to-square
                       </v-icon>
                       <v-icon
@@ -2831,6 +2881,105 @@ const handleDrop2 = (e: DragEvent) => {
         </div>
       </v-card>
     </v-dialog>
+
+    <!-- 标准工时维护 -->
+    <v-dialog v-model="standardDialog" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> {{ procedure.rsv2 }}维护标准工时 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="standardDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-select
+            v-model="specification"
+            :items="specificationList"
+            item-title="specification"
+            item-value="id"
+            label="请选择规格"
+          ></v-select>
+          <v-text-field v-model="piece" label="请填写加工次数"></v-text-field>
+        </v-card-text>
+
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="saveStandard()"
+          >
+            确认修改
+          </v-btn>
+          <v-btn color="grey" size="large" @click="standardDialog = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+    <!-- 修改工单明细行 -->
+    <v-dialog v-model="editDetailDialog" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 修改工单 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="editDetailDialog = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-text-field
+            v-model="operatingTicketDetail.estimated_delivery_date"
+            :rules="dateRule"
+            label="预计交付时间"
+          ></v-text-field>
+          <v-text-field
+            v-model="operatingTicketDetail.actual_delivery_date"
+            :rules="dateRule"
+            label="实际交付时间"
+          ></v-text-field>
+          <v-text-field
+            v-model="operatingTicketDetail.standard_time"
+            label="标准工时"
+          ></v-text-field>
+          <v-text-field
+            v-model="operatingTicketDetail.actual_time"
+            label="实际工时"
+          ></v-text-field>
+          <v-text-field
+            v-model="operatingTicketDetail.planned_quantity"
+            label="计划数量"
+            :rules="numberRule"
+          ></v-text-field>
+          <v-text-field
+            v-model="operatingTicketDetail.reported_quantity"
+            label="实际报工数量"
+            :rules="numberRule"
+          ></v-text-field>
+          <v-select
+            label="单位"
+            :items="units"
+            v-model="operatingTicketDetail.unit"
+          ></v-select>
+        </v-card-text>
+
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="editTicketDetail()"
+          >
+            确认修改
+          </v-btn>
+          <v-btn color="grey" size="large" @click="editDetailDialog = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
     <!-- 产品编号类型 -->
     <v-dialog v-model="productDialog" min-width="1400px" width="1000px">
       <v-card>
