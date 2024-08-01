@@ -364,18 +364,18 @@ async function showProcessDialog(item: any) {
         )
         .filter(Boolean);
 
-      // 更新 droppedChips 数组中的元素
-      droppedChips.value.forEach((chip: any) => {
-        // 在 orderList 数组中查找相同工序编号的对象
-        const found: any = orderList.value.find(
-          (item: any) => item.config_code === chip.config_code
-        );
-        if (found) {
-          // 如果找到了，就更新 detail 和 piece 属性
-          chip.detail = found?.detail;
-          chip.piece = found?.piece;
-        }
-      });
+      // // 更新 droppedChips 数组中的元素
+      // droppedChips.value.forEach((chip: any) => {
+      //   // 在 orderList 数组中查找相同工序编号的对象
+      //   const found: any = orderList.value.find(
+      //     (item: any) => item.config_code === chip.config_code
+      //   );
+      //   if (found) {
+      //     // 如果找到了，就更新 detail 和 piece 属性
+      //     chip.detail = found?.detail;
+      //     chip.piece = found?.piece;
+      //   }
+      // });
 
       chips.value = chips.value.filter(
         (chip) =>
@@ -405,26 +405,37 @@ const piece = ref<number>(0);
 const procedure = ref<any>();
 // 选择工序，并且给工序分配类型和加工次数
 async function reduceProcedure(item: any) {
-  // console.log(item);
-  procedure.value = item;
-  const data = await useHttp(
-    "/MesWorkingTimeRule/M125GetRuleList",
-    "get",
-    undefined,
-    {
-      procedure_type: item.rsv2,
-    }
-  );
-  specificationList.value = data.data;
-  standardDialog.value = true;
+  if (clickIndex.value < 0) {
+    chips.value.splice(chips.value.indexOf(item), 1);
+    droppedChips.value.push(item);
+  } else {
+    chips.value.splice(chips.value.indexOf(item), 1);
+    droppedChips.value[clickIndex.value].rsv2 =
+      droppedChips.value[clickIndex.value].rsv2 + "," + item.rsv2;
+  }
+
+  // piece.value = 0;
+  // specification.value = null;
+  // // console.log(item);
+  // procedure.value = item;
+  // const data = await useHttp(
+  //   "/MesWorkingTimeRule/M125GetRuleList",
+  //   "get",
+  //   undefined,
+  //   {
+  //     procedure_type: item.rsv2,
+  //   }
+  // );
+  // specificationList.value = data.data;
+  // standardDialog.value = true;
 }
 
 // 修改规格
 async function updateStandard(item: any) {
-  reduceProcedure(item);
-  piece.value = item.piece;
-  specification.value = item.detail.id;
-  standardDialog.value = true;
+  // reduceProcedure(item);
+  // piece.value = item.piece;
+  // specification.value = item.detail.id;
+  // standardDialog.value = true;
 }
 
 // 保存规格
@@ -462,8 +473,6 @@ async function saveStandard() {
 
   standardDialog.value = false;
   // console.log(droppedChips.value);
-  piece.value = 0;
-  specification.value = null;
 }
 
 //存储将单工序修改为工序组的数据
@@ -568,9 +577,9 @@ async function saveTicket() {
           employee_id: "",
           employee_name: "",
           supplier_name: item.supplier_name,
-          times: _item.piece,
-          workingtime_ruleid: _item.detail.id,
-          piece_number: _item.detail.piece_number,
+          // times: _item.piece,
+          // workingtime_ruleid: _item.detail.id,
+          // piece_number: _item.detail.piece_number,
         });
       });
     });
@@ -2800,13 +2809,13 @@ const handleDrop2 = (e: DragEvent) => {
                         <div style="flex-basis: 20%">
                           {{ index + 1 + "." + item.rsv2 }}
                         </div>
-                        <div style="flex-basis: 30%">
+                        <!-- <div style="flex-basis: 30%">
                           规格与次数：
                           <div class="mt-2">
                             {{ item?.detail?.specification }}/
                             {{ item?.piece }}
                           </div>
-                        </div>
+                        </div> -->
                         <div style="flex-basis: 20%">
                           是否委外：
                           <v-switch
