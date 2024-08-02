@@ -111,6 +111,7 @@ watch(
 // 将页面菜单由 list 转换成 tree
 onMounted(() => {
   pageMenus.value = useListToTree(useCookieJoin("menuList"));
+  // console.log(pageMenus.value);
 });
 </script>
 
@@ -270,7 +271,7 @@ onMounted(() => {
     </v-app-bar>
 
     <v-main>
-    <slot></slot>
+      <slot></slot>
     </v-main>
   </v-app>
 </template>

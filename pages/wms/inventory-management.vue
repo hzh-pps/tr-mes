@@ -298,7 +298,7 @@ function resetFilter() {
       <v-select
         label="仓库"
         v-model="searchWarehouse"
-        :items="['A', 'B', 'C', 'D', 'E', 'F', 'Z']"
+        :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
         variant="outlined"
         density="compact"
         hide-details

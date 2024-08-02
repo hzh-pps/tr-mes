@@ -442,7 +442,7 @@ function printCode() {
         v-model="searchWarehouse"
         variant="outlined"
         density="compact"
-        :items="['A', 'B', 'C', 'D', 'E', 'F', 'Z']"
+        :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
         hide-details
         class="mt-2"
       ></v-select>
@@ -591,7 +591,7 @@ function printCode() {
               <v-select
                 label="仓库号"
                 v-model="stationInfo.warehouse"
-                :items="['A', 'B', 'C', 'D', 'E', 'F', 'Z']"
+                :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
                 hide-details
               ></v-select>
             </v-col>
@@ -711,7 +711,7 @@ function printCode() {
               <v-select
                 label="仓库号"
                 v-model="stationInfo.warehouse"
-                :items="['A', 'B', 'C', 'D', 'E', 'F', 'Z']"
+                :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
                 clearable
                 hide-details
               ></v-select>

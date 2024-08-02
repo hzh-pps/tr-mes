@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     "/work-basic/work-class": { ssr: false },
     "/mes/outsource-process": { ssr: false },
     "/wms/outbound-shipment": { ssr: false },
+    "/wms/picking-list": { ssr: false },
     "/dashboard/delivery-dashboard": { ssr: false },
     "/dashboard/project-progress-dashboard": { ssr: false },
   },

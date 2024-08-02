@@ -4,13 +4,13 @@ import QrcodeVue from "qrcode.vue";
 import JsBarcode from "jsbarcode";
 useSeoMeta({
   // 该页面的标题
-  title: "出库单制作",
+  title: "领料单制作",
   // 社交媒体分享该页面时显示的标题
-  ogTitle: "出库单制作",
+  ogTitle: "领料单制作",
   // 该页面的描述
-  description: "同日 MES 系统，出库单制作",
+  description: "同日 MES 系统，领料单制作",
   // 社交媒体分享该页面时显示的描述
-  ogDescription: "同日 MES 系统，出库单制作",
+  ogDescription: "同日 MES 系统，领料单制作",
   // 社交媒体分享该页面时显示的图片
   ogImage: "/同日图标.png",
 });
@@ -153,6 +153,7 @@ let detailHeaders = ref<any[]>([
     title: "操作",
     align: "center",
     key: "action",
+
     sortable: false,
     filterable: true,
   },
@@ -481,14 +482,14 @@ async function addDetailSucces() {
     setSnackbar("black", "新增失败");
   }
 }
-//清单明细修改
-function showEditDetailDialog(item: any) {
-  detailInfo.value = { ...item };
-  editDetailDialog.value = true;
-}
-function editDetailSucces() {
-  editDetailDialog.value = false;
-}
+// //清单明细修改
+// function showEditDetailDialog(item: any) {
+//   detailInfo.value = { ...item };
+//   editDetailDialog.value = true;
+// }
+// function editDetailSucces() {
+//   editDetailDialog.value = false;
+// }
 //清单明细删除
 function showDelDetailDialog(item: any) {
   detailInfo.value = { ...item };
@@ -620,7 +621,7 @@ function buildTree(parents: any, children: any) {
     <!-- 出库单表头 -->
     <v-col cols="5">
       <v-card class="h-100">
-        <v-toolbar class="text-h6 pl-6">出库清单</v-toolbar>
+        <v-toolbar class="text-h6 pl-6">领料清单</v-toolbar>
         <v-row class="ma-1">
           <v-col cols="3">
             <v-text-field
@@ -1056,9 +1057,9 @@ function buildTree(parents: any, children: any) {
     <v-col cols="7">
       <v-card class="h-100">
         <v-toolbar class="text-h6 pl-6" v-if="orderCode"
-          >出库清单【{{ orderCode }}】明细</v-toolbar
+          >领料清单【{{ orderCode }}】明细</v-toolbar
         >
-        <v-toolbar class="text-h6 pl-6" v-else>出库清单明细</v-toolbar>
+        <v-toolbar class="text-h6 pl-6" v-else>领料清单明细</v-toolbar>
 
         <v-row class="ma-1">
           <v-col cols="3">
@@ -1490,7 +1491,7 @@ function buildTree(parents: any, children: any) {
       </v-card>
     </v-dialog>
     <!-- 修改清单明细 -->
-    <v-dialog v-model="editDetailDialog" min-width="400px" width="560px">
+    <!-- <v-dialog v-model="editDetailDialog" min-width="400px" width="560px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 修改清单明细 </v-toolbar-title>
@@ -1578,7 +1579,7 @@ function buildTree(parents: any, children: any) {
           </v-btn>
         </div>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <!-- 删除清单明细 -->
     <v-dialog v-model="deleteDetailDialog" min-width="400px" width="560px">
       <v-card>

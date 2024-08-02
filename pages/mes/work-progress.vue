@@ -587,7 +587,8 @@ async function endTask() {
                                 <div style="flex-basis: 12%">
                                   <v-btn
                                     v-if="
-                                      item_.reported_quantity <
+                                      item_.reported_quantity +
+                                        item_.noqa_quantity <
                                       item_.planned_quantity
                                     "
                                     color="deep-purple-darken-2"
