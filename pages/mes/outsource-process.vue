@@ -581,6 +581,7 @@ async function stepSuccess() {
 let selected = ref<any[]>([]);
 let printList = ref<any[]>([]);
 
+// 打印单头
 async function print() {
   await selected.value.forEach((item: any) => {
     printList.value.push({
@@ -596,8 +597,87 @@ async function print() {
   selected.value = [];
   printList.value = [];
 }
+
+let printListTwo = ref<any[]>([]);
+//选择的发货单编号
+let outSourcedCode = ref<any[]>([]);
+//选择的所有的装箱单明细数据
+let detailData = ref<any[]>([]);
+// 是否打印出明细二维码
+let show = ref<boolean>(false);
+let overlay = ref<boolean>(false);
+// 打印明细
+async function printDetail() {
+  overlay.value = true;
+  await getPrintData();
+  printJS({
+    printable: "printContent2",
+    type: "html",
+    targetStyles: ["*"],
+  });
+  selected.value = [];
+  outSourcedCode.value = [];
+  detailData.value = [];
+  printListTwo.value = [];
+  overlay.value = false;
+}
+//获取选择的所有装箱单明细
+async function fetchDetailData() {
+  for (const item of outSourcedCode.value) {
+    const data: any = await useHttp(
+      "/QaOrder/M81GetQaOrder",
+      "get",
+      undefined,
+      {
+        outsourced_head_code: item,
+        PageIndex: 1,
+        PageSize: 100000,
+        SortedBy: "id",
+        SortType: "0",
+      }
+    );
+    detailData.value.push(...data.data.pageList);
+  }
+}
+
+//获取打印数据
+async function getPrintData() {
+  //第一步 拿到选择的所有的装箱单号
+  await selected.value.forEach((item: any) => {
+    outSourcedCode.value.push(item.outsourced_head_code);
+  });
+
+  //第二步 获取选择的所有装箱单的明细数据
+  await fetchDetailData();
+
+  //第三步,将装箱单数据和装箱单数据的明细组合成树形结构
+  printListTwo.value = await buildTree(selected.value, detailData.value);
+  console.log(printListTwo.value);
+}
+// 将俩个数组整合到一起成一个树形结构的方法
+function buildTree(parents: any, children: any) {
+  let tree: any = [];
+  parents.forEach((parent: any) => {
+    let node = { ...parent, children: [] };
+    children.forEach((child: any) => {
+      if (child.outsourced_head_code === parent.outsourced_head_code) {
+        node.children.push(child);
+      }
+    });
+    tree.push(node);
+  });
+  return tree;
+}
 </script>
 <template>
+  <!-- 遮罩层 -->
+  <v-overlay :model-value="overlay" class="align-center justify-center">
+    <v-progress-circular
+      color="primary"
+      size="64"
+      indeterminate
+    ></v-progress-circular>
+  </v-overlay>
   <v-row class="ma-2">
     <v-col cols="5">
       <v-card class="h-100">
@@ -625,61 +705,188 @@ async function print() {
           </v-col>
 
           <v-col cols="12">
-            <v-btn
-              color="blue-darken-2"
-              class="mr-2 mt-2"
-              size="default"
-              @click="filter1"
-              >查询</v-btn
-            >
-            <v-btn
-              color="red"
-              class="mr-2 mt-2"
-              size="default"
-              @click="resetFilter1"
-              >重置查询</v-btn
-            >
-            <v-btn
-              color="blue-darken-2"
-              class="mr-2 mt-2"
-              size="default"
-              @click="showAddHeader"
-            >
-              新增委外
-            </v-btn>
-            <v-btn
-              color="blue-darken-2"
-              class="mr-2 mt-2"
-              size="default"
-              @click="print"
-            >
-              打印单号
-            </v-btn>
-            <v-col cols="12" v-show="false">
-              <div id="printContent">
-                <div
-                  v-for="(item, index) in printList"
-                  :key="index"
-                  style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                  "
+            <div class="d-flex">
+              <v-btn
+                color="blue-darken-2"
+                class="mr-2 mt-2"
+                size="default"
+                @click="filter1"
+                >查询</v-btn
+              >
+              <v-btn
+                color="red"
+                class="mr-2 mt-2"
+                size="default"
+                @click="resetFilter1"
+                >重置查询</v-btn
+              >
+              <v-btn
+                color="blue-darken-2"
+                class="mr-2 mt-2"
+                size="default"
+                @click="showAddHeader"
+              >
+                新增委外
+              </v-btn>
+              <v-btn
+                color="blue-darken-2"
+                class="mr-2 mt-2"
+                size="default"
+                @click="print"
+              >
+                打印单号
+              </v-btn>
+              <div class="d-flex">
+                <v-btn
+                  color="blue-darken-2"
+                  class="mr-2 mt-2"
+                  size="default"
+                  @click="printDetail"
                 >
-                  <div>
+                  打印明细
+                </v-btn>
+                <v-checkbox
+                  label="是否打印二维码"
+                  v-model="show"
+                  color="red"
+                ></v-checkbox>
+              </div>
+            </div>
+          </v-col>
+          <!-- 打印表头 -->
+          <v-col cols="12" v-show="false">
+            <div id="printContent">
+              <div
+                v-for="(item, index) in printList"
+                :key="index"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  height: 100%;
+                "
+              >
+                <div>
+                  <qrcode-vue
+                    style="width: 70px; height: 70px"
+                    :value="item.id"
+                  ></qrcode-vue>
+                </div>
+                <div class="text-text-subtitle-1">委外单号:{{ item.name }}</div>
+              </div>
+            </div>
+          </v-col>
+          <!-- 打印明细 -->
+          <v-col cols="12" v-show="false">
+            <div id="printContent2">
+              <div
+                v-for="(item, index) in printListTwo"
+                :key="index"
+                style="page-break-before: always"
+              >
+                <div class="d-flex">
+                  <div style="font-weight: bold; flex-basis: 12%">
                     <qrcode-vue
                       style="width: 70px; height: 70px"
-                      :value="item.id"
+                      :value="item.outsourced_head_code"
                     ></qrcode-vue>
                   </div>
-                  <div class="text-text-subtitle-1">
-                    委外单号:{{ item.name }}
+                  <div style="font-weight: bold; flex-basis: 30%">
+                    供应商：{{ item.supplier_name }}
+                  </div>
+                  <div style="font-weight: bold; flex-basis: 32%">
+                    委外日期：{{ item.outsourced_start_date }}
+                  </div>
+                  <div style="font-weight: bold; flex-basis: 25%">
+                    委外重量：{{ item.total_weight }}
                   </div>
                 </div>
+                <hr />
+                <!--明细页面  -->
+                <div v-for="(item_, index_) in item.children" :key="index_">
+                  <div style="display: flex" class="mt-3">
+                    <div
+                      style="padding-right: 5px; flex-basis: 12%"
+                      v-show="show"
+                      v-if="index_ % 2 === 0"
+                    >
+                      <qrcode-vue
+                        style="width: 70px; height: 70px"
+                        :value="item_.dispatch_order"
+                      ></qrcode-vue>
+                    </div>
+                    <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 15%;
+                        align-self: center;
+                        font-size: 12px;
+                      "
+                    >
+                      {{ item_.dispatch_order }}
+                    </div>
+
+                    <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 25%;
+                        align-self: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                      "
+                    >
+                      {{ item_.material_name }}
+                    </div>
+
+                    <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 8%;
+                        align-self: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                      "
+                    >
+                      {{ item_.outsourced_quantity }}{{ item_.unit }}
+                    </div>
+                    <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 50%;
+                        align-self: center;
+                        font-size: 12px;
+                      "
+                    >
+                      <span style="font-weight: bold">
+                        {{ item_.material_id }}
+                      </span>
+                    </div>
+                    <!-- <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 10%;
+                        align-self: center;
+                      "
+                    >
+                      项目号:
+                      {{ item_.project_code }}
+                    </div> -->
+                    <div
+                      style="padding-right: 5px; flex-basis: 12%"
+                      v-show="show"
+                      v-if="index_ % 2 !== 0"
+                    >
+                      <qrcode-vue
+                        style="width: 70px; height: 70px"
+                        :value="item_.dispatch_order"
+                      ></qrcode-vue>
+                    </div>
+                  </div>
+                  <hr />
+                </div>
               </div>
-            </v-col>
+            </div>
           </v-col>
           <v-col cols="12">
             <v-data-table
