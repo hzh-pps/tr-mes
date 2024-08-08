@@ -155,24 +155,45 @@ async function getData() {
   // 数据加载完成后，设置loaded为true
   loaded.value = true;
 }
-const projectValues = ["ZM23247-0", "ZL24028-0", "ZL23256-0", "ZL23246-0"];
-let project = ref<string>("ZM23247-0");
+//获取项目号
+let projectCodeList = ref<any[]>([]);
+async function getProjectCode() {
+  const data: any = await useHttp(
+    "/MesWorkOrderDetail/M75GetProjectCode",
+    "get",
+    undefined,
+    {
+      code: "",
+      start_time: "",
+      end_time: "",
+    }
+  );
+  projectCodeList.value = data.data.filter((item: any) => {
+    return item.isfinish === 0;
+  });
+  project.value = projectCodeList.value[0].code;
+}
+
+let project = ref<string>("");
 let projectIndex = 0;
 // 设置定时器，每20秒更改project的值
 setInterval(() => {
-  projectIndex = (projectIndex + 1) % projectValues.length; // 循环遍历项目ID数组
-  project.value = projectValues[projectIndex];
-}, 20000);
+  projectIndex = (projectIndex + 1) % projectCodeList.value.length; // 循环遍历项目ID数组
+  project.value = projectCodeList.value[projectIndex].code;
+}, 5000);
 watch(project, () => {
   getData();
 });
 onMounted(() => {
+  getProjectCode();
+
   // 获取 token
   const token = useCookie("token");
   if (!token.value) {
     useCookie("token").value =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0MSIsIm5hbWUiOiLog6Hlv5fmtbciLCJvcmdfdGFnIjoiIiwiZXhwaXJlcyI6IjE3MTAzODQxODYiLCJleHAiOjE3MTAzODQxODYsImlzcyI6IllZRiIsImF1ZCI6IkFzcE5ldENvcmVVc2VyIn0.aovLfvANWtfAHt4yGD0cPF0A8xtEP9nGA8pUwrYpgGY";
   }
+
   // 使用setTimeout来实现只执行一次的定时器
   setTimeout(() => {
     getData();

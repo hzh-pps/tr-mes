@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import * as XLSX from "xlsx";
 useSeoMeta({
   // 该页面的标题
   title: "库存管理",
@@ -210,6 +211,39 @@ function resetFilter() {
   searchSkuSpec.value = "";
   getInventoryData();
 }
+
+// 导出数据
+function exportToExcel() {
+  // 创建中文表头映射
+  const headerMap = [
+    { key: "time_in", title: "入库时间" },
+    { key: "reserved01", title: "项目号" },
+    { key: "sku_desc", title: "物料名" },
+    { key: "sku", title: "图号" },
+    { key: "qty", title: "库存数量" },
+    { key: "state", title: "库存状态" },
+    { key: "user_update", title: "创建人" },
+    { key: "place_code", title: "库位编号" },
+    { key: "", title: "备注" },
+    // { key: "work_time", title: "工时" },
+  ];
+
+  // 将数据转换为带有中文表头的数组
+  const formattedData: any = inventoryList.value.map((item: any) => {
+    const formattedItem: { [key: string]: any } = {}; // 明确索引签名
+    headerMap.forEach((header: any) => {
+      formattedItem[header.title] = item[header.key];
+    });
+    return formattedItem;
+  });
+
+  // 使用xlsx库创建和下载Excel文件
+  const ws = XLSX.utils.json_to_sheet(formattedData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "当天入库统计");
+  const date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, date + "入库统计.xlsx");
+}
 </script>
 <template>
   <v-row class="ma-2">
@@ -339,6 +373,14 @@ function resetFilter() {
       <v-btn color="red" class="mr-2 mt-2" size="default" @click="resetFilter"
         >重置搜索</v-btn
       >
+      <v-btn
+        color="blue-darken-2"
+        class="mr-2 mt-2"
+        size="default"
+        @click="exportToExcel"
+      >
+        导出Excel
+      </v-btn>
     </v-col>
     <v-col cols="12">
       <v-data-table

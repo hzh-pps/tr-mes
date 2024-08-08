@@ -33,7 +33,7 @@ let editDetailDialog = ref<boolean>(false);
 let deleteDetailDialog = ref<boolean>(false);
 let orderHeaders = ref<any[]>([
   {
-    title: "出库单号",
+    title: "领料单号",
     align: "center",
     key: "out_order_num",
     sortable: true,
@@ -267,7 +267,7 @@ let orderList = ref<any[]>([]);
 //获取数据库清单数据
 async function getDate() {
   const data: any = await useHttp(
-    "/WmsOutOrder/G166GetOutOrderList",
+    "/wmsPickList/G174GetPickOrder",
     "get",
     undefined,
     {
@@ -306,7 +306,7 @@ let detailList = ref<any[]>([]);
 //获取数据库清单明细数据
 async function getDateDetail() {
   const data: any = await useHttp(
-    "/WmsOutOrder/G170GetOutDetialList",
+    "/wmsPickList/G178GetPickDetailList",
     "get",
     undefined,
     {
@@ -349,7 +349,7 @@ function showAddDialog() {
   addDialog.value = true;
 }
 async function addSucces() {
-  const data: any = await useHttp("/WmsOutOrder/G167AddOutOrder", "post", [
+  const data: any = await useHttp("/wmsPickList/G175AddPickOrder", "post", [
     orderInfo.value,
   ]);
   if (data.code === 200) {
@@ -367,7 +367,7 @@ function showEditDialog(item: any) {
 }
 async function editSucces() {
   const data: any = await useHttp(
-    "/WmsOutOrder/G168UptOutOrder",
+    "/wmsPickList/G176UptPickOrder",
     "put",
     orderInfo.value
   );
@@ -386,7 +386,7 @@ function showDelDialog(item: any) {
 }
 async function delSucces() {
   const data: any = await useHttp(
-    "/WmsOutOrder/G169DelOutOrder",
+    "/wmsPickList/G177DelPickOrder",
     "delete",
     undefined,
     {
@@ -412,7 +412,7 @@ async function auditSucces() {
   orderInfo.value.order_status = "已审核";
   orderInfo.value.reserved10 = new Date().toISOString();
   const data: any = await useHttp(
-    "/WmsOutOrder/G168UptOutOrder",
+    "/wmsPickList/G176UptPickOrder",
     "put",
     orderInfo.value
   );
@@ -423,7 +423,7 @@ async function auditSucces() {
     item.reserved08 = new Date().toISOString();
     return item;
   });
-  await useHttp("/WmsOutOrder/G172UptOutDetial", "put", detailList.value);
+  await useHttp("/wmsPickList/G180UptPickDetial", "put", detailList.value);
   if (data.code === 200) {
     setSnackbar("green", "审核通过");
     getDate();
@@ -461,7 +461,7 @@ async function addDetailSucces() {
     });
   });
   const data: any = await useHttp(
-    "/WmsOutOrder/G171AddOutDetial",
+    "/wmsPickList/G179AddPickDetial",
     "post",
     tabArr
   );
@@ -497,7 +497,7 @@ function showDelDetailDialog(item: any) {
 }
 async function delDetailSucces() {
   const data: any = await useHttp(
-    "/WmsOutOrder/G173DelOutDetial",
+    "/wmsPickList/G181DelPickDetial",
     "delete",
     undefined,
     {
@@ -575,7 +575,7 @@ async function print() {
 async function fetchDetailData() {
   for (const item of code.value) {
     const data: any = await useHttp(
-      "/WmsOutOrder/G170GetOutDetialList",
+      "/wmsPickList/G178GetPickDetailList",
       "get",
       undefined,
       {
@@ -814,7 +814,7 @@ function buildTree(parents: any, children: any) {
                       </div>
 
                       <div style="font-weight: black; white-space: nowrap">
-                        出库清单:{{ item.out_order_num }}
+                        领料清单:{{ item.out_order_num }}
                       </div>
                     </div>
                     <div

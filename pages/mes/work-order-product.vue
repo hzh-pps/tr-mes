@@ -621,7 +621,7 @@ async function saveTicket() {
   selectName.value = "全选";
   droppedChips.value = [];
 }
-
+const debounceSaveTicket = useDebounce(saveTicket, 3000);
 //点击常用工序组
 async function commonProduce(item: any) {
   droppedChips.value.push(item);
@@ -2880,7 +2880,7 @@ const handleDrop2 = (e: DragEvent) => {
             color="blue-darken-2"
             size="large"
             class="mr-2"
-            @click="saveTicket()"
+            @click="debounceSaveTicket()"
           >
             保存工艺路线
           </v-btn>

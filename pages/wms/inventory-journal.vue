@@ -141,8 +141,28 @@ async function getBillData() {
   data2.data = data2.data.filter(
     (item: any) => item.place_code.charAt(0) === searchWareHouse.value
   );
-  outLength.value = data2.data.length;
-  data2.data.forEach((item_: any) => {
+  const data3: any = await useHttp(
+    "/wmsPickList/G178GetPickDetailList",
+    "get",
+    undefined,
+    {
+      container_code: searchContainer.value,
+      place_code: searchArea.value,
+      sku_code: searchCode.value,
+      sku_name: searchName.value,
+      batch_lot: searchLot.value,
+      sku_spec: searchGg.value,
+      createdate_from: searchDateStart,
+      createdate_to: searchDateEnd,
+      flag_done: "Y",
+    }
+  );
+  data3.data = data2.data.filter(
+    (item: any) => item.place_code.charAt(0) === searchWareHouse.value
+  );
+  outLength.value = data2.data.length + data3.data.length;
+  const data4 = [...data2.data, ...data3.data];
+  data4.forEach((item_: any) => {
     billList.value.push({
       type: "out",
       place_code: item_.place_code,
