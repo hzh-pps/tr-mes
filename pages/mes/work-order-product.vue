@@ -334,7 +334,7 @@ async function showProcessDialog(item: any) {
     await getProduce();
     //常用工序流程
     await getProduceGroup();
-    await getOrderDetail(item.workorder_did);
+    // await getOrderDetail(item.workorder_did);
     //将点击的哪行数据存到选择数据中
     innerTableSelectData.value.push(item);
     innerTableSelectData.value.forEach((item: any) => {
@@ -577,13 +577,13 @@ async function saveTicket() {
           employee_id: "",
           employee_name: "",
           supplier_name: item.supplier_name,
-          times: 0,
-          workingtime_ruleid: 0,
-          piece_number: 1,
+          // times: 0,
+          // workingtime_ruleid: 0,
+          // piece_number: 1,
         });
       });
     });
-    // console.log(tabArr.value);
+    console.log(tabArr.value);
     //将维护的工序添加到工单明细工序分配数据库
     await useHttp(
       "/ProductionRecode/M22AddProductionRecode",

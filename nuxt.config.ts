@@ -3,6 +3,8 @@ export default defineNuxtConfig({
   build: {
     transpile: ["vuetify"],
   },
+  // 配置仅在客户端时调用DataV,，否则项目启动时，会报错document找不到。
+  plugins: [{ src: "~/plugins/datav.ts", mode: "client" }],
   routeRules: {
     "/mes/work-produce-recode": { ssr: false },
     "/mes/work-progress": { ssr: false },
@@ -29,9 +31,10 @@ export default defineNuxtConfig({
   // 配置默认请求地址
   runtimeConfig: {
     public: {
-      apiBase: "http://10.0.20.250:5009",
-      // apiBase: "http://10.0.20.61:8068",
+      // apiBase: "http://10.0.20.250:5009",
+      apiBase: "http://10.0.20.61:8068",
       // apiBase: "https://localhost:44372",
+      apiBases: "http://10.0.20.61:8068",
     },
   },
 
