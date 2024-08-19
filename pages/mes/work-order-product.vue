@@ -577,13 +577,13 @@ async function saveTicket() {
           employee_id: "",
           employee_name: "",
           supplier_name: item.supplier_name,
-          // times: 0,
-          // workingtime_ruleid: 0,
-          // piece_number: 1,
+          times: 0,
+          workingtime_ruleid: 0,
+          piece_number: 1,
         });
       });
     });
-    console.log(tabArr.value);
+    // console.log(tabArr.value);
     //将维护的工序添加到工单明细工序分配数据库
     await useHttp(
       "/ProductionRecode/M22AddProductionRecode",
@@ -621,7 +621,7 @@ async function saveTicket() {
   selectName.value = "全选";
   droppedChips.value = [];
 }
-const debounceSaveTicket = useDebounce(saveTicket, 3000);
+const debounceSaveTicket = useDebounce(saveTicket, 300);
 //点击常用工序组
 async function commonProduce(item: any) {
   droppedChips.value.push(item);
@@ -683,7 +683,13 @@ onMounted(async () => {
   endDate.value = oldDate.toISOString().substring(0, 10);
   startDateDetail.value = nowDate.toISOString().substring(0, 10);
   endDateDetail.value = oldDate.toISOString().substring(0, 10);
-  getWorkOrder();
+  await getWorkOrder();
+  if (tableData.value.length) {
+    detailName.value = tableData.value[0].workorder_hid;
+    detailStatus.value = tableData.value[0].status;
+    searchProject.value = tableData.value[0].product_id.slice(-9);
+    searchMac.value = tableData.value[0].product_id.substring(2, 7);
+  }
   getWorkOrderDetail();
 });
 
@@ -709,12 +715,6 @@ async function getWorkOrder() {
 
     tableData.value = formatDate(data.data.pageList);
     tableDataLength.value = data.data.totalCount;
-    if (tableData.value.length) {
-      detailName.value = tableData.value[0].workorder_hid;
-      detailStatus.value = tableData.value[0].status;
-      searchProject.value = tableData.value[0].product_id.slice(-9);
-      searchMac.value = tableData.value[0].product_id.substring(2, 7);
-    }
   } catch (error) {
     setSnackbar("black", "获取数据失败");
     console.log(error);
@@ -2435,8 +2435,10 @@ const handleDrop2 = (e: DragEvent) => {
                               size="small"
                               @click="showProcessDialog(item)"
                               :color="
-                                item.status !== '已分配待排产' &&
-                                item.status !== '新增未分配'
+                                item.procedure === '' || item.procedure === null
+                                  ? '#ff461f'
+                                  : item.status !== '已分配待排产' &&
+                                    item.status !== '新增未分配'
                                   ? 'grey'
                                   : 'green'
                               "

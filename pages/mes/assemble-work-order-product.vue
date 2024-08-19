@@ -499,7 +499,7 @@ async function saveTicket() {
 
   droppedChips.value = [];
 }
-
+const debounceSaveTicket = useDebounce(saveTicket, 300);
 //点击常用工序组
 async function commonProduce(item: any) {
   droppedChips.value.push(item);
@@ -1541,8 +1541,10 @@ function subData(itemToDelete: any) {
                             size="small"
                             @click="showProcessDialog(item)"
                             :color="
-                              item.status !== '已审核待排产' &&
-                              item.status !== '新建未审核'
+                              item.procedure === '' || item.procedure === null
+                                ? '#ff461f'
+                                : item.status !== '已分配待排产' &&
+                                  item.status !== '新增未分配'
                                 ? 'grey'
                                 : 'green'
                             "
@@ -1891,7 +1893,7 @@ function subData(itemToDelete: any) {
             color="blue-darken-2"
             size="large"
             class="mr-2"
-            @click="saveTicket()"
+            @click="debounceSaveTicket()"
           >
             保存工艺路线
           </v-btn>
