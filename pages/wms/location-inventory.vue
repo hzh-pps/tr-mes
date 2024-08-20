@@ -137,7 +137,6 @@ async function getInventoryData() {
       reserved01: searchReserve.value,
       sku_spec: searchSkuSpec.value,
       flag_void: "N",
-      reserved03: "1",
     }
   );
   inventoryList.value = data.data
@@ -155,6 +154,11 @@ async function getInventoryData() {
       item.time_out = item.time_out.substring(0, 10);
       item.time_first_in = item.time_first_in.substring(0, 10);
       return item;
+    })
+    .filter((item: any) => {
+      if (item.reserved01) {
+        return item;
+      }
     });
 }
 onMounted(() => {
