@@ -40,7 +40,7 @@ let headers = ref<any[]>([
   {
     title: "派工单号",
     align: "center",
-    key: "reserved01",
+    key: "source_order",
     sortable: false,
     filterable: true,
   },
@@ -134,7 +134,7 @@ async function getInventoryData() {
       indateTo: searchInDateTo.value,
       indateFrom: searchInDateFrom.value,
       lot: searchLot.value,
-      reserved01: searchReserve.value,
+      source_order: searchReserve.value,
       sku_spec: searchSkuSpec.value,
       flag_void: "N",
     }
@@ -156,7 +156,12 @@ async function getInventoryData() {
       return item;
     })
     .filter((item: any) => {
-      if (item.reserved01) {
+      if (
+        item.reserved01 &&
+        item.reserved02 !== "模组组装" &&
+        item.reserved02 !== "单机总装" &&
+        item.reserved02 !== "电气装配"
+      ) {
         return item;
       }
     });

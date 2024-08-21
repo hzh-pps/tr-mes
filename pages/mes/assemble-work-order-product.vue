@@ -459,6 +459,9 @@ async function saveTicket() {
           required_inspection: _item.rsv3,
           employee_id: "",
           employee_name: "",
+          times: 0,
+          workingtime_ruleid: 0,
+          piece_number: 1,
         });
       });
     });

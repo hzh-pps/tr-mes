@@ -470,7 +470,8 @@ async function addDetailSucces() {
     setSnackbar("green", "新增成功");
     selected.value = selected.value.map((item: any) => {
       item.flag_occupy = "Y";
-      item.qty = item.qty.toString();
+      item.flag_void = "Y";
+      item.qty = item.qty.toString(); 
       return item;
     });
 
