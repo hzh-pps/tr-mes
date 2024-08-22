@@ -577,9 +577,9 @@ async function saveTicket() {
           employee_id: "",
           employee_name: "",
           supplier_name: item.supplier_name,
-          // times: 0,
-          // workingtime_ruleid: 0,
-          // piece_number: 1,
+          times: 10,
+          workingtime_ruleid: 0,
+          piece_number: 1,
         });
       });
     });

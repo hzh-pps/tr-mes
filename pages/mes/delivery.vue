@@ -341,6 +341,7 @@ function showAddDialog() {
     packer: "",
     lwh: "",
     package_material: "",
+    status: "新增",
   };
 
   addDialog.value = true;
@@ -541,6 +542,9 @@ function minusRow(item: any, index: number) {
   addDetailList.value.splice(index, 1);
 }
 async function addDetailSucces() {
+  addDetailList.value.forEach((item: any) => {
+    item.status = "新增";
+  });
   const data: any = await useHttp(
     "/PackingList/M98AddPackingListDetial",
     "post",
