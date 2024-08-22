@@ -270,7 +270,7 @@ function exportToExcel() {
     <v-col cols="2">
       <v-text-field
         label="最早入库时间"
-        v-model="searchInDateTo"
+        v-model="searchInDateFrom"
         variant="outlined"
         density="compact"
         hide-details
@@ -281,7 +281,7 @@ function exportToExcel() {
     <v-col cols="2">
       <v-text-field
         label="最晚入库时间"
-        v-model="searchInDateFrom"
+        v-model="searchInDateTo"
         variant="outlined"
         density="compact"
         hide-details

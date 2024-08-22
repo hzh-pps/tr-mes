@@ -60,20 +60,7 @@ let orderHeaders = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-  {
-    title: "仓库",
-    align: "center",
-    key: "warehouse_code",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "库区",
-    align: "center",
-    key: "area_code",
-    sortable: false,
-    filterable: true,
-  },
+
   {
     title: "单据状态",
     align: "center",
@@ -92,21 +79,6 @@ let orderHeaders = ref<any[]>([
 ]);
 let detailHeaders = ref<any[]>([
   {
-    title: "库位",
-    align: "center",
-    key: "place_code",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "容器号",
-    align: "center",
-    key: "container_code",
-    sortable: false,
-    filterable: true,
-  },
-
-  {
     title: "物料编码",
     align: "center",
     key: "sku_code",
@@ -120,20 +92,7 @@ let detailHeaders = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-  {
-    title: "物料规格",
-    align: "center",
-    key: "sku_spec",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "批次号",
-    align: "center",
-    key: "batch_lot",
-    sortable: false,
-    filterable: true,
-  },
+
   {
     title: "物料数量",
     align: "center",
@@ -161,20 +120,19 @@ let detailHeaders = ref<any[]>([
 //表头
 let headers = ref<any[]>([
   {
-    title: "库位编号",
+    title: "仓库",
     align: "center",
-    key: "place_code",
+    key: "warehouse_code",
     sortable: false,
     filterable: true,
   },
   {
-    title: "容器编号",
+    title: "派工单号",
     align: "center",
-    key: "container_id",
+    key: "source_order",
     sortable: false,
     filterable: true,
   },
-
   {
     title: "物料描述",
     align: "center",
@@ -189,24 +147,19 @@ let headers = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-  {
-    title: "物料规格",
-    align: "center",
-    key: "sku_spec",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "库存批次",
-    align: "center",
-    key: "lot",
-    sortable: false,
-    filterable: true,
-  },
+
   {
     title: "库存数量",
     align: "center",
     key: "qty",
+    sortable: false,
+    filterable: true,
+  },
+
+  {
+    title: "创建人",
+    align: "center",
+    key: "user_create",
     sortable: false,
     filterable: true,
   },
@@ -228,7 +181,7 @@ let searchCtnId = ref<any>("");
 let searchPlaceId = ref<any>("");
 let searchMaterial = ref<any>("");
 let searchMaterialDesc = ref<any>("");
-let searchSkuSpec = ref<any>("");
+let searchReserve = ref<any>("");
 let searchLot = ref<any>("");
 //清单查询
 function filter() {
@@ -326,12 +279,15 @@ onMounted(() => {
 //清单对象
 let orderInfo = ref<any>(null);
 //打开清单添加弹框
-function showAddDialog() {
+// function showAddDialog() {
+//   // addDialog.value = true;
+// }
+async function showAddDialog() {
   orderInfo.value = {
-    out_order_type: "",
+    out_order_type: "生产领料",
     belong_customer: "",
-    warehouse_code: "",
-    area__code: "",
+    warehouse_code: "P",
+    area_code: "00",
     order_status: "新建",
     priority: "",
     carrier_people: "",
@@ -346,16 +302,13 @@ function showAddDialog() {
     reserved09: "",
     reserved10: "",
   };
-  addDialog.value = true;
-}
-async function addSucces() {
   const data: any = await useHttp("/wmsPickList/G175AddPickOrder", "post", [
     orderInfo.value,
   ]);
   if (data.code === 200) {
     setSnackbar("green", "新增成功");
     getDate();
-    addDialog.value = false;
+    // addDialog.value = false;
   } else {
     setSnackbar("black", "新增失败");
   }
@@ -471,7 +424,7 @@ async function addDetailSucces() {
     selected.value = selected.value.map((item: any) => {
       item.flag_occupy = "Y";
       item.flag_void = "Y";
-      item.qty = item.qty.toString(); 
+      item.qty = item.qty.toString();
       return item;
     });
 
@@ -515,25 +468,25 @@ let selected = ref<any[]>([]);
 //获取数据库数据
 async function getInventoryData() {
   const data: any = await useHttp("/wmsInventory/G115condition_query", "post", {
-    container_id: searchCtnId.value,
-    place_code: searchPlaceId.value,
-    warehouse_code: warehouseCode.value,
-    area_code: areaCode.value,
+    area_code: "00",
     sku: searchMaterial.value,
     sku_desc: searchMaterialDesc.value,
-    indateTo: "",
-    indateFrom: "",
-    lot: searchLot.value,
-    reserved01: "",
-    sku_spec: searchSkuSpec.value,
-    flag_occupy: "N",
+    source_order: searchReserve.value,
+    flag_void: "N",
   });
-  inventoryList.value = data.data.map((item: any) => {
-    item.time_in = item.time_in.substring(0, 10);
-    item.time_out = item.time_out.substring(0, 10);
-    item.time_first_in = item.time_first_in.substring(0, 10);
-    return item;
-  });
+  inventoryList.value = data.data
+    .map((item: any) => {
+      item.time_in = item.time_in.substring(0, 10);
+      item.time_out = item.time_out.substring(0, 10);
+      item.time_first_in = item.time_first_in.substring(0, 10);
+      return item;
+    })
+    .filter((item: any) => {
+      if (item.warehouse_code === "P" && item.state === "A") {
+        return item;
+      }
+    });
+  console.log(inventoryList.value);
 }
 //查询
 function filter1() {
@@ -546,7 +499,7 @@ function resetFilter1() {
   searchMaterial.value = "";
   searchMaterialDesc.value = "";
   searchLot.value = "";
-  searchSkuSpec.value = "";
+  searchReserve.value = "";
   selected.value = [];
   getInventoryData();
 }
@@ -624,28 +577,7 @@ function buildTree(parents: any, children: any) {
       <v-card class="h-100">
         <v-toolbar class="text-h6 pl-6">领料清单</v-toolbar>
         <v-row class="ma-1">
-          <v-col cols="3">
-            <v-text-field
-              label="库区"
-              v-model="searchArea"
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="mt-2"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="3">
-            <v-select
-              label="仓库"
-              v-model="searchWarehouse"
-              :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="mt-2"
-            ></v-select>
-          </v-col>
-          <v-col cols="3">
+          <v-col cols="6">
             <v-select
               label="状态"
               v-model="searchStatus"
@@ -656,7 +588,7 @@ function buildTree(parents: any, children: any) {
               class="mt-2"
             ></v-select>
           </v-col>
-          <v-col cols="3">
+          <v-col cols="6">
             <v-select
               label="出库类型"
               v-model="searchWType"
@@ -729,7 +661,7 @@ function buildTree(parents: any, children: any) {
                   fa-solid fa-eye
                 </v-icon>
                 <!-- 修改 -->
-                <v-icon
+                <!-- <v-icon
                   color="blue"
                   size="small"
                   class="mr-3"
@@ -740,7 +672,7 @@ function buildTree(parents: any, children: any) {
                   "
                 >
                   fa-solid fa-pen
-                </v-icon>
+                </v-icon> -->
                 <!-- 删除 -->
                 <v-icon
                   color="red"
@@ -1063,28 +995,7 @@ function buildTree(parents: any, children: any) {
         <v-toolbar class="text-h6 pl-6" v-else>领料清单明细</v-toolbar>
 
         <v-row class="ma-1">
-          <v-col cols="3">
-            <v-text-field
-              label="库位"
-              v-model="searchPlace"
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="mt-2"
-            ></v-text-field>
-          </v-col>
-          <v-col cols="3">
-            <v-text-field
-              label="容器"
-              v-model="searchContainer"
-              variant="outlined"
-              density="compact"
-              hide-details
-              class="mt-2"
-            ></v-text-field>
-          </v-col>
-
-          <v-col cols="3">
+          <v-col cols="6">
             <v-text-field
               label="物料编码"
               v-model="searchSkuCode"
@@ -1094,7 +1005,7 @@ function buildTree(parents: any, children: any) {
               class="mt-2"
             ></v-text-field>
           </v-col>
-          <v-col cols="3">
+          <v-col cols="6">
             <v-text-field
               label="物料名称"
               v-model="searchSkuName"
@@ -1161,7 +1072,7 @@ function buildTree(parents: any, children: any) {
       </v-card>
     </v-col>
     <!-- 新增清单 -->
-    <v-dialog v-model="addDialog" min-width="400px" width="560px">
+    <!-- <v-dialog v-model="addDialog" min-width="400px" width="560px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 新增清单 </v-toolbar-title>
@@ -1183,21 +1094,6 @@ function buildTree(parents: any, children: any) {
             </v-col>
 
             <v-col cols="12">
-              <v-select
-                label="仓库"
-                v-model="orderInfo.warehouse_code"
-                :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
-                hide-details
-              ></v-select>
-            </v-col>
-            <v-col cols="12">
-              <v-text-field
-                label="库区"
-                v-model="orderInfo.area_code"
-                hide-details
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12">
               <v-text-field
                 label="货主"
                 v-model="orderInfo.belong_customer"
@@ -1207,22 +1103,15 @@ function buildTree(parents: any, children: any) {
           </v-row>
         </v-card-text>
         <div class="d-flex justify-end mr-6 mb-4">
-          <v-btn
-            color="blue-darken-2"
-            size="large"
-            class="mr-2"
-            @click="addSucces()"
-          >
-            确认
-          </v-btn>
+          <v-btn color="blue-darken-2" size="large" class="mr-2"> 确认 </v-btn>
           <v-btn color="grey" size="large" @click="addDialog = false">
             取消
           </v-btn>
         </div>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <!-- 修改清单 -->
-    <v-dialog v-model="editDialog" min-width="400px" width="560px">
+    <!-- <v-dialog v-model="editDialog" min-width="400px" width="560px">
       <v-card>
         <v-toolbar color="blue">
           <v-toolbar-title> 修改清单 </v-toolbar-title>
@@ -1243,21 +1132,6 @@ function buildTree(parents: any, children: any) {
               ></v-select>
             </v-col>
 
-            <v-col cols="12">
-              <v-select
-                label="仓库"
-                v-model="orderInfo.warehouse_code"
-                :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
-                hide-details
-              ></v-select>
-            </v-col>
-            <v-col cols="12">
-              <v-text-field
-                label="库区"
-                v-model="orderInfo.area_code"
-                hide-details
-              ></v-text-field>
-            </v-col>
             <v-col cols="12">
               <v-text-field
                 label="货主"
@@ -1281,7 +1155,7 @@ function buildTree(parents: any, children: any) {
           </v-btn>
         </div>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <!-- 删除清单 -->
     <v-dialog v-model="deleteDialog" min-width="400px" width="560px">
       <v-card>
@@ -1381,27 +1255,18 @@ function buildTree(parents: any, children: any) {
         </v-toolbar>
         <v-card-text class="mt-4">
           <v-row>
-            <v-col cols="2">
+            <v-col cols="4">
               <v-text-field
-                label="库位编号"
-                v-model="searchPlaceId"
+                label="派工单号"
+                v-model="searchReserve"
                 variant="outlined"
                 density="compact"
                 hide-details
                 class="mt-2"
               ></v-text-field>
             </v-col>
-            <v-col cols="2">
-              <v-text-field
-                label="容器编号"
-                v-model="searchCtnId"
-                variant="outlined"
-                density="compact"
-                hide-details
-                class="mt-2"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="2">
+
+            <v-col cols="4">
               <v-text-field
                 label="物料描述"
                 v-model="searchMaterialDesc"
@@ -1411,7 +1276,7 @@ function buildTree(parents: any, children: any) {
                 class="mt-2"
               ></v-text-field>
             </v-col>
-            <v-col cols="2">
+            <v-col cols="4">
               <v-text-field
                 label="物料编码"
                 v-model="searchMaterial"
@@ -1422,26 +1287,6 @@ function buildTree(parents: any, children: any) {
               ></v-text-field>
             </v-col>
 
-            <v-col cols="2">
-              <v-text-field
-                label="物料规格"
-                v-model="searchSkuSpec"
-                variant="outlined"
-                density="compact"
-                hide-details
-                class="mt-2"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="2">
-              <v-text-field
-                label="库存批次"
-                v-model="searchLot"
-                variant="outlined"
-                density="compact"
-                hide-details
-                class="mt-2"
-              ></v-text-field>
-            </v-col>
             <v-col cols="12">
               <v-btn
                 color="blue-darken-2"
