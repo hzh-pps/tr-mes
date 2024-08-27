@@ -97,6 +97,11 @@ async function getOrderData() {
       item.outsourced_start_date = item.outsourced_start_date.substring(0, 10);
       return item;
     })
+    .filter((item: any) => {
+      if (item.outsourced_status !== "完成") {
+        return item;
+      }
+    })
     .sort((a: any, b: any) => {
       return b.id - a.id;
     });
@@ -276,7 +281,6 @@ let searchEndDate = endDate.toISOString().substring(0, 10);
 async function getOutSourceData() {
   const data: any = await useHttp("/QaOrder/M81GetQaOrder", "get", undefined, {
     outsourced_head_code: code.value,
-
     material_name: searchName.value,
     dispatch_order: searchDispatch.value,
     outsourced_status: searchStatus.value,
@@ -302,6 +306,11 @@ async function getOutSourceData() {
         );
       }
       return item;
+    })
+    .filter((item: any) => {
+      if (item.outsourced_status !== "完成") {
+        return item;
+      }
     })
     .sort((a: any, b: any) => {
       return b.id - a.id;
@@ -487,24 +496,65 @@ function addInfo() {
   addShowDialog.value = true;
 }
 async function addDetailSucces() {
-  const data: any = await useHttp(
-    "/QaOrder/M82AddQaOrder",
-    "post",
-    tabArr.value
+  // 获取当前委外单头的明细
+  const data: any = await useHttp("/QaOrder/M81GetQaOrder", "get", undefined, {
+    outsourced_head_code: code.value,
+    PageIndex: 1,
+    PageSize: 100000,
+    SortedBy: "id",
+    SortType: "0",
+  });
+  const orderList: any = data.data.pageList;
+  // 处理后的数据
+  const arr1: any = containDuplicate(
+    removeDispatchOrder(orderList, tabArr1.value)
   );
-
+  // 处理后的数据
+  const arr2: any = containDuplicate(
+    removeDispatchOrder(orderList, tabArr.value)
+  );
+  // 工单开始
+  await useHttp("/QaOrder/M82AddQaOrder", "post", arr2);
+  // 生成委外登记明细
   await useHttp(
     "/MesProcessScanRecord/M86AddProcessScanRecordList",
     "post",
-    tabArr1.value
+    arr1
   );
 
   getOutSourceData();
   addShowDialog.value = false;
   addDialog.value = false;
 }
+
+// 判断数组里面是否有重复的数据，如果有保存一个
+function containDuplicate(tabArr: any[]) {
+  const dispatchOrderMap: { [key: string]: any } = {};
+
+  tabArr.forEach((obj) => {
+    const dispatchOrder = obj.dispatch_order;
+    if (!dispatchOrderMap.hasOwnProperty(dispatchOrder)) {
+      dispatchOrderMap[dispatchOrder] = obj;
+    }
+  });
+
+  const firstObjectsWithSameDispatchOrder: any[] =
+    Object.values(dispatchOrderMap);
+
+  return firstObjectsWithSameDispatchOrder;
+}
+
+// 判断数据库是否已经有该明细(做到后端防抖)
+function removeDispatchOrder(a: any[], b: any[]) {
+  const dispatchOrdersA = a.map((obj) => obj.dispatch_order);
+  const filteredB = b.filter((objB) => {
+    return !dispatchOrdersA.includes(objB.dispatch_order);
+  });
+  return filteredB;
+}
+
 // 函数防抖，防止连续点击创建多条数据，多次调用后台接口，提升性能
-const debounceAddDetailSucces = useDebounce(addDetailSucces, 1000);
+const debounceAddDetailSucces = useDebounce(addDetailSucces, 500);
 let banInfo = ref<any>(null);
 // 取消委外
 function showBan(item: any) {
@@ -621,7 +671,7 @@ async function printDetail() {
   printListTwo.value = [];
   overlay.value = false;
 }
-//获取选择的所有装箱单明细
+//获取选择的所有委外单明细
 async function fetchDetailData() {
   for (const item of outSourcedCode.value) {
     const data: any = await useHttp(
