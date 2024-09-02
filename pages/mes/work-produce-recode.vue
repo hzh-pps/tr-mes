@@ -1331,6 +1331,7 @@ function assign() {
             </v-row>
           </v-card>
         </v-window-item>
+
         <v-window-item value="打印明细">
           <v-card class="rounded-lg elevation-2 ml-1">
             <v-toolbar density="compact">

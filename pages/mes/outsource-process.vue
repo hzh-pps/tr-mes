@@ -143,6 +143,7 @@ function showEditHeader(item: any) {
   editHeaderDialog.value = true;
 }
 async function editHeader() {
+  console.log(headerInfo.value);
   const data: any = await useHttp(
     "/QaOrderHead/M113UpdateQaOrderHead",
     "put",
@@ -1190,6 +1191,15 @@ function buildTree(parents: any, children: any) {
                 hide-details
                 type="date"
               ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-select
+                label="工单状态"
+                v-model="headerInfo.outsourced_status"
+                :items="['发出', '完成']"
+                clearable
+                hide-details
+              ></v-select>
             </v-col>
           </v-row>
         </v-card-text>

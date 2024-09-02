@@ -28,6 +28,17 @@ let searchInDateFrom = ref<any>(null);
 let searchLot = ref<any>(null);
 let searchReserve = ref<any>(null);
 let searchSkuSpec = ref<any>(null);
+
+const list = ref([
+  { text: "在制品", value: "Z" },
+  { text: "半成品", value: "P" },
+  { text: "成品", value: "S" },
+]);
+
+const tab = ref(null);
+watch(tab, () => {
+  getInventoryData();
+});
 //表头
 let headers = ref<any[]>([
   {
@@ -94,24 +105,11 @@ let headers = ref<any[]>([
     sortable: false,
     filterable: true,
   },
+
   {
-    title: "出库时间（计划）",
+    title: "项目号",
     align: "center",
-    key: "time_out",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "第一次入库时间",
-    align: "center",
-    key: "time_first_in",
-    sortable: false,
-    filterable: true,
-  },
-  {
-    title: "创建人",
-    align: "center",
-    key: "user_create",
+    key: "reserved03",
     sortable: false,
     filterable: true,
   },
@@ -127,7 +125,7 @@ async function getInventoryData() {
     {
       container_id: searchCtnId.value,
       place_code: searchPlaceId.value,
-      warehouse_code: searchWarehouse.value,
+      warehouse_code: tab.value,
       area_code: "00",
       sku: searchMaterial.value,
       sku_desc: searchMaterialDesc.value,
@@ -194,13 +192,13 @@ function exportToExcel() {
   // 创建中文表头映射
   const headerMap = [
     { key: "time_in", title: "入库时间" },
-    { key: "reserved01", title: "项目号" },
+    { key: "source_order", title: "派工单号" },
     { key: "sku_desc", title: "物料名" },
-    { key: "sku", title: "图号" },
+    { key: "sku", title: "物料编码" },
     { key: "qty", title: "库存数量" },
     { key: "state", title: "库存状态" },
     { key: "user_update", title: "创建人" },
-    { key: "place_code", title: "库位编号" },
+    { key: "warehouse_code", title: "仓库" },
     { key: "", title: "备注" },
     // { key: "work_time", title: "工时" },
   ];
@@ -223,114 +221,134 @@ function exportToExcel() {
 }
 </script>
 <template>
-  <v-row class="ma-2">
-    <v-col cols="2">
-      <v-text-field
-        label="派工单号"
-        v-model="searchReserve"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="物料编码"
-        v-model="searchMaterial"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="物料描述"
-        v-model="searchMaterialDesc"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-text-field>
-    </v-col>
+  <v-tabs v-model="tab" align-tabs="title" style="border: 1px solid black">
+    <v-tab
+      style="border: 1px solid black; font-size: 18px; font-weight: 600"
+      v-for="(item, index) in list"
+      :text="item.text"
+      :value="item.value"
+      :key="index"
+    >
+    </v-tab>
+  </v-tabs>
 
-    <v-col cols="2">
-      <v-select
-        label="仓库"
-        v-model="searchWarehouse"
-        :items="['P', 'Z']"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-      ></v-select>
-    </v-col>
+  <v-tabs-window v-model="tab">
+    <v-tabs-window-item :value="tab">
+      <v-row class="ma-2">
+        <v-col cols="2">
+          <v-text-field
+            label="派工单号"
+            v-model="searchReserve"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            label="项目号"
+            v-model="searchMaterial"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+          ></v-text-field>
+        </v-col>
 
-    <v-col cols="2">
-      <v-text-field
-        label="最早入库时间"
-        v-model="searchInDateFrom"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-        type="date"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="2">
-      <v-text-field
-        label="最晚入库时间"
-        v-model="searchInDateTo"
-        variant="outlined"
-        density="compact"
-        hide-details
-        class="mt-2"
-        type="date"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="12">
-      <v-btn
-        color="blue-darken-2"
-        class="mr-2 mt-2"
-        size="default"
-        @click="filter"
-        >搜索</v-btn
-      >
-      <v-btn color="red" class="mr-2 mt-2" size="default" @click="resetFilter"
-        >重置搜索</v-btn
-      >
-      <v-btn
-        color="blue-darken-2"
-        class="mr-2 mt-2"
-        size="default"
-        @click="exportToExcel"
-      >
-        导出Excel
-      </v-btn>
-    </v-col>
-    <v-col cols="12">
-      <v-data-table
-        hover
-        :items-per-page="10"
-        :headers="headers"
-        :items="inventoryList"
-        style="overflow-x: auto; white-space: nowrap"
-        fixed-footer
-        fixed-header
-        height="610"
-        no-data-text="没有找到符合的数据"
-      >
-        <template v-slot:item.state="{ item }">
-          {{
-            item.raw.state === "A"
-              ? "可用"
-              : item.raw.state === "B"
-              ? "加工中"
-              : "待质检"
-          }}
-        </template>
-      </v-data-table>
-    </v-col>
-  </v-row>
+        <v-col cols="2">
+          <v-text-field
+            label="设备编号"
+            v-model="searchMaterial"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="2">
+          <v-text-field
+            label="物料描述"
+            v-model="searchMaterialDesc"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="2">
+          <v-text-field
+            label="最早入库时间"
+            v-model="searchInDateFrom"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+            type="date"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="2">
+          <v-text-field
+            label="最晚入库时间"
+            v-model="searchInDateTo"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+            type="date"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12">
+          <v-btn
+            color="blue-darken-2"
+            class="mr-2 mt-2"
+            size="default"
+            @click="filter"
+            >搜索</v-btn
+          >
+          <v-btn
+            color="red"
+            class="mr-2 mt-2"
+            size="default"
+            @click="resetFilter"
+            >重置搜索</v-btn
+          >
+          <v-btn
+            color="blue-darken-2"
+            class="mr-2 mt-2"
+            size="default"
+            @click="exportToExcel"
+          >
+            导出Excel
+          </v-btn>
+        </v-col>
+        <v-col cols="12">
+          <v-data-table
+            hover
+            :items-per-page="10"
+            :headers="headers"
+            :items="inventoryList"
+            style="overflow-x: auto; white-space: nowrap"
+            fixed-footer
+            fixed-header
+            height="610"
+            no-data-text="没有找到符合的数据"
+          >
+            <template v-slot:item.state="{ item }">
+              {{
+                item.raw.state === "A"
+                  ? "可用"
+                  : item.raw.state === "B"
+                  ? "加工中"
+                  : "待质检"
+              }}
+            </template>
+          </v-data-table>
+        </v-col>
+      </v-row>
+    </v-tabs-window-item>
+  </v-tabs-window>
 </template>
+<style scoped></style>

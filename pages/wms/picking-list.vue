@@ -120,13 +120,6 @@ let detailHeaders = ref<any[]>([
 //表头
 let headers = ref<any[]>([
   {
-    title: "仓库",
-    align: "center",
-    key: "warehouse_code",
-    sortable: false,
-    filterable: true,
-  },
-  {
     title: "派工单号",
     align: "center",
     key: "source_order",
@@ -147,7 +140,6 @@ let headers = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-
   {
     title: "库存数量",
     align: "center",
@@ -157,9 +149,9 @@ let headers = ref<any[]>([
   },
 
   {
-    title: "创建人",
+    title: "项目号",
     align: "center",
-    key: "user_create",
+    key: "reserved03",
     sortable: false,
     filterable: true,
   },
@@ -1268,7 +1260,7 @@ function buildTree(parents: any, children: any) {
 
             <v-col cols="4">
               <v-text-field
-                label="物料描述"
+                label="项目号"
                 v-model="searchMaterialDesc"
                 variant="outlined"
                 density="compact"
@@ -1278,7 +1270,7 @@ function buildTree(parents: any, children: any) {
             </v-col>
             <v-col cols="4">
               <v-text-field
-                label="物料编码"
+                label="设备编号"
                 v-model="searchMaterial"
                 variant="outlined"
                 density="compact"
