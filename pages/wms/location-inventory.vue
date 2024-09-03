@@ -25,7 +25,7 @@ let searchMaterial = ref<any>(null);
 let searchMaterialDesc = ref<any>(null);
 let searchInDateTo = ref<any>(null);
 let searchInDateFrom = ref<any>(null);
-let searchLot = ref<any>(null);
+let searchProject = ref<any>(null);
 let searchReserve = ref<any>(null);
 let searchSkuSpec = ref<any>(null);
 
@@ -131,7 +131,7 @@ async function getInventoryData() {
       sku_desc: searchMaterialDesc.value,
       indateTo: searchInDateTo.value,
       indateFrom: searchInDateFrom.value,
-      lot: searchLot.value,
+      reserved03: searchProject.value,
       source_order: searchReserve.value,
       sku_spec: searchSkuSpec.value,
       flag_void: "N",
@@ -181,7 +181,7 @@ function resetFilter() {
   searchMaterialDesc.value = "";
   searchInDateTo.value = "";
   searchInDateFrom.value = "";
-  searchLot.value = "";
+  searchProject.value = "";
   searchReserve.value = "";
   searchSkuSpec.value = "";
   getInventoryData();
@@ -248,6 +248,17 @@ function exportToExcel() {
         <v-col cols="2">
           <v-text-field
             label="项目号"
+            v-model="searchProject"
+            variant="outlined"
+            density="compact"
+            hide-details
+            class="mt-2"
+          ></v-text-field>
+        </v-col>
+
+        <v-col cols="2">
+          <v-text-field
+            label="物料编号"
             v-model="searchMaterial"
             variant="outlined"
             density="compact"
@@ -258,18 +269,7 @@ function exportToExcel() {
 
         <v-col cols="2">
           <v-text-field
-            label="设备编号"
-            v-model="searchMaterial"
-            variant="outlined"
-            density="compact"
-            hide-details
-            class="mt-2"
-          ></v-text-field>
-        </v-col>
-
-        <v-col cols="2">
-          <v-text-field
-            label="物料描述"
+            label="物料名称"
             v-model="searchMaterialDesc"
             variant="outlined"
             density="compact"

@@ -27,7 +27,6 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "echarts": "^5.4.3",
     "handsontable": "^14.0.0",
-    "html2canvas": "^1.4.1",
     "jsbarcode": "^3.11.6",
     "pinia": "^2.1.6",
     "print-js": "^1.6.0",

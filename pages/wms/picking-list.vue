@@ -174,7 +174,7 @@ let searchPlaceId = ref<any>("");
 let searchMaterial = ref<any>("");
 let searchMaterialDesc = ref<any>("");
 let searchReserve = ref<any>("");
-let searchLot = ref<any>("");
+let searchProject = ref<any>("");
 //清单查询
 function filter() {
   getDate();
@@ -465,6 +465,7 @@ async function getInventoryData() {
     sku_desc: searchMaterialDesc.value,
     source_order: searchReserve.value,
     flag_void: "N",
+    reserved03: searchProject.value,
   });
   inventoryList.value = data.data
     .map((item: any) => {
@@ -490,7 +491,7 @@ function resetFilter1() {
   searchPlaceId.value = "";
   searchMaterial.value = "";
   searchMaterialDesc.value = "";
-  searchLot.value = "";
+  searchProject.value = "";
   searchReserve.value = "";
   selected.value = [];
   getInventoryData();
@@ -1261,7 +1262,7 @@ function buildTree(parents: any, children: any) {
             <v-col cols="4">
               <v-text-field
                 label="项目号"
-                v-model="searchMaterialDesc"
+                v-model="searchProject"
                 variant="outlined"
                 density="compact"
                 hide-details
