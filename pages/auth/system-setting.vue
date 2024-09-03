@@ -45,8 +45,8 @@ onMounted(() => {
         text-shadow: 5px 5px 5px #ff0000;
       "
     >
-      <div>当前版本:202408-21</div>
-      <div>当前版本修改内容: 增加机加工的半成品的出入库功能</div>
+      <div>当前版本:202409-03</div>
+      <div>当前版本修改内容: 更改库存搜索，新增项目清单页面</div>
     </div>
   </div>
 </template>
