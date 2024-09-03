@@ -653,6 +653,16 @@ let searchWorkType = ref<string>("钣金");
 watch(searchWorkType, function () {
   getWorkDetail();
 });
+// 当然明细页
+let workDetailPage = ref(1);
+watch(workDetailPage, () => {
+  getWorkDetail();
+});
+// 数据库数据条
+let workDetailPageCount = ref(0);
+let workDetailTablePageCount = computed(() => {
+  return Math.ceil(workDetailPageCount.value / 10);
+});
 //获取工单明细编号以及派工单
 async function getWorkDetail() {
   const data = await useHttp(
@@ -665,9 +675,14 @@ async function getWorkDetail() {
       mcode: searchMcode.value,
       mdescription: searchMdescription.value,
       workorder_type: searchWorkType.value,
+      PageIndex: workDetailPage.value,
+      PageSize: 10,
+      SortType: 1,
+      SortedBy: "id",
     }
   );
-  workDetail.value = data.data
+  workDetailPageCount.value = data.data.totalCount;
+  workDetail.value = data.data.pageList
     .map((item: any) => {
       item.estimated_delivery_date = item.estimated_delivery_date.substring(
         0,
@@ -1498,6 +1513,12 @@ function assign() {
                       </v-expansion-panel-text>
                     </v-expansion-panel>
                   </v-expansion-panels>
+                  <div class="text-center pt-2">
+                    <v-pagination
+                      v-model="workDetailPage"
+                      :length="workDetailTablePageCount"
+                    ></v-pagination>
+                  </div>
                 </v-card>
               </v-col>
               <!-- 打印页面 -->
