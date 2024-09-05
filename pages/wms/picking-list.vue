@@ -120,6 +120,13 @@ let detailHeaders = ref<any[]>([
 //表头
 let headers = ref<any[]>([
   {
+    title: "库位号",
+    align: "center",
+    key: "place_code",
+    sortable: false,
+    filterable: true,
+  },
+  {
     title: "派工单号",
     align: "center",
     key: "source_order",
@@ -475,11 +482,17 @@ async function getInventoryData() {
       return item;
     })
     .filter((item: any) => {
-      if (item.warehouse_code === "P" && item.state === "A") {
+      if (
+        item.warehouse_code === "P" &&
+        item.state === "A" &&
+        item.reserved01 &&
+        item.reserved02 !== "模组组装" &&
+        item.reserved02 !== "单机总装" &&
+        item.reserved02 !== "电气装配"
+      ) {
         return item;
       }
     });
-  console.log(inventoryList.value);
 }
 //查询
 function filter1() {

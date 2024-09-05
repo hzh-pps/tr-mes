@@ -24,6 +24,8 @@ useSeoMeta({
 definePageMeta({
   keepalive: false,
 });
+// 路由
+const router = useRouter();
 //工作中心类型
 let workCenterType = ref<any[]>(["钣金", "机加工", "装配", "其他"]);
 //工单类型
@@ -661,8 +663,25 @@ watch(workDetailPage, () => {
 // 数据库数据条
 let workDetailPageCount = ref(0);
 let workDetailTablePageCount = computed(() => {
-  return Math.ceil(workDetailPageCount.value / 10);
+  return Math.ceil(workDetailPageCount.value / tableDetailPerPage.value);
 });
+let tableDetailPerPage = ref(50);
+watch(tableDetailPerPage, () => {
+  getWorkDetail();
+});
+let selectName = ref("全选");
+const tab = ref<any[]>([]);
+// 全选
+function selectAll() {
+  if (selectName.value === "全选") {
+    selectedRow.value = [...workDetail.value];
+    selectName.value = "清空";
+    console.log(selectedRow.value);
+  } else {
+    selectedRow.value = [];
+    selectName.value = "全选";
+  }
+}
 //获取工单明细编号以及派工单
 async function getWorkDetail() {
   const data = await useHttp(
@@ -676,7 +695,7 @@ async function getWorkDetail() {
       mdescription: searchMdescription.value,
       workorder_type: searchWorkType.value,
       PageIndex: workDetailPage.value,
-      PageSize: 10,
+      PageSize: tableDetailPerPage.value,
       SortType: 1,
       SortedBy: "id",
     }
@@ -700,7 +719,12 @@ async function getWorkDetail() {
     .sort((a: any, b: any) => {
       return b.id - a.id;
     });
+  // 获取当前页面的所有工单明细编号
+  tab.value = workDetail.value.map((item: any) => {
+    return item.workorder_hid;
+  });
 }
+
 //搜索
 function searchWork() {
   getWorkDetail();
@@ -729,6 +753,18 @@ async function openPrint() {
     targetStyles: ["*"],
   });
   selectedRow.value = [];
+  selectName.value = "全选";
+}
+
+//委外打印
+async function openPrint2() {
+  printJS({
+    printable: "printContent2",
+    type: "html",
+    targetStyles: ["*"],
+  });
+  selectedRow.value = [];
+  selectName.value = "全选";
 }
 
 function assign() {
@@ -1401,7 +1437,7 @@ function assign() {
                 ></v-select>
               </v-col>
 
-              <v-col cols="12">
+              <v-col cols="10">
                 <v-btn
                   color="blue-darken-2"
                   class="mr-2"
@@ -1422,8 +1458,39 @@ function assign() {
                   class="mr-2"
                   size="large"
                   @click="openPrint()"
+                  v-permission="
+                    `${router.currentRoute.value.fullPath}->openPrintDetail`
+                  "
                   >打印明细</v-btn
                 >
+                <v-btn
+                  color="blue-darken-2"
+                  class="mr-2"
+                  size="large"
+                  @click="openPrint2()"
+                  v-permission="
+                    `${router.currentRoute.value.fullPath}->openPrint2Detail`
+                  "
+                  >委外打印</v-btn
+                >
+                <v-btn
+                  class="mr-2"
+                  color="blue-darken-2"
+                  size="large"
+                  @click="selectAll"
+                  >{{ selectName }}</v-btn
+                >
+              </v-col>
+              <v-col cols="2">
+                <v-select
+                  class="mr-1"
+                  density="compact"
+                  hide-details
+                  variant="outlined"
+                  label="每页最大数"
+                  :items="[10, 20, 30, 40, 50, 100]"
+                  v-model="tableDetailPerPage"
+                ></v-select>
               </v-col>
 
               <v-col cols="12">
@@ -1623,6 +1690,91 @@ function assign() {
                         </div>
                       </div>
                       <hr />
+                    </div>
+                  </div>
+                </div>
+              </v-col>
+              <!-- 委外打印页面 -->
+              <v-col cols="12" v-show="false">
+                <div id="printContent2">
+                  <div v-for="(item, index) in selectedRow" :key="index">
+                    <hr />
+                    <div class="d-flex">
+                      <div style="flex-basis: 40%; font-weight: bold">
+                        产出料：{{ item.mdescription }}
+                      </div>
+                      <div style="font-weight: bold">
+                        料号/图纸号：{{ item.mcode }}
+                      </div>
+                    </div>
+                    <hr />
+                    <!--派工单二维码页面  -->
+                    <div v-for="(item_, index_) in item.children" :key="index_">
+                      <div style="display: flex" class="mt-1">
+                        <div
+                          style="padding-right: 5px; flex-basis: 12%"
+                          v-if="index_ % 2 === 0"
+                        >
+                          <qrcode-vue
+                            style="width: 30px; height: 30px"
+                            :value="item_.dispatch_order"
+                          ></qrcode-vue>
+                        </div>
+                        <div
+                          style="
+                            font-family: 'SongTi';
+                            flex-basis: 25%;
+                            align-self: center;
+                          "
+                        >
+                          派工单号：{{ item_.dispatch_order }}
+                        </div>
+
+                        <div
+                          style="
+                            font-family: 'SongTi';
+                            flex-basis: 25%;
+                            align-self: center;
+                          "
+                        >
+                          工序顺序：{{ item_.procedure_order_id }} [{{
+                            item_.procedure_description
+                          }}]
+                        </div>
+
+                        <div
+                          style="
+                            font-family: 'SongTi';
+                            flex-basis: 15%;
+                            align-self: center;
+                          "
+                        >
+                          质检:
+                          <span>
+                            {{
+                              item_.required_inspection === "Y" ? "是" : "否"
+                            }}
+                          </span>
+                        </div>
+                        <div
+                          style="
+                            font-family: 'SongTi';
+                            flex-basis: 20%;
+                            align-self: center;
+                          "
+                        >
+                          @{{ item_.work_center_name }}
+                        </div>
+                        <div
+                          style="padding-right: 5px; flex-basis: 12%"
+                          v-if="index_ % 2 !== 0"
+                        >
+                          <qrcode-vue
+                            style="width: 30px; height: 30px"
+                            :value="item_.dispatch_order"
+                          ></qrcode-vue>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

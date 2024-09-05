@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   plugins: [{ src: "~/plugins/datav.ts", mode: "client" }],
   routeRules: {
     "/mes/work-produce-recode": { ssr: false },
+    "/mes/project-progress": { ssr: false },
     "/mes/work-progress": { ssr: false },
     "/mes/delivery": { ssr: false },
     "/mes/purchase-part": { ssr: false },

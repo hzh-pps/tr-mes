@@ -24,6 +24,98 @@ const { snackbarShow, snackbarColor, snackbarText, setSnackbar } =
   useSnackbar();
 //工单类型
 let workTypeList = ref<any[]>([]);
+let CKDList = ref<any[]>([
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+  "CKD202405118",
+  "CKD202405112",
+  "CKD202405110",
+  "CKD202405107",
+  "CKD202405090",
+  "CKD202405082",
+  "CKD202405065",
+  "CKD202405032",
+  "CD202405029",
+]);
 let workTypeInFo = ref<string>("机加,钣金,电器装配,模组装配,总装,其他");
 let tab1 = ref<any>(null);
 let tab2 = ref<any>(null);
@@ -83,6 +175,8 @@ function resetFilter() {
   endDate.value = oldDate.toISOString().substring(0, 10);
   getProjectCode();
 }
+
+let CKDListWithObjects = ref<any[]>([]);
 //获取工单明细数据
 async function getWorkDetail() {
   const data: any = await useHttp(
@@ -102,18 +196,42 @@ async function getWorkDetail() {
     })
     .sort((a: any, b: any) => {
       if (
-        a.mes_workorderdetaildata.status === "正常完工" &&
-        b.mes_workorderdetaildata.status !== "正常完工"
-      ) {
-        return 1;
-      }
-      if (
-        a.mes_workorderdetaildata.status !== "正常完工" &&
-        b.mes_workorderdetaildata.status === "正常完工"
+        a.mes_workorderdetaildata.estimated_delivery_date >
+        b.mes_workorderdetaildata.estimated_delivery_date
       ) {
         return -1;
       }
+      if (
+        a.mes_workorderdetaildata.estimated_delivery_date <
+        b.mes_workorderdetaildata.estimated_delivery_date
+      ) {
+        return 1;
+      }
       return 0;
+    });
+  // .sort((a: any, b: any) => {
+  //   if (
+  //     a.mes_workorderdetaildata.status === "正常完工" &&
+  //     b.mes_workorderdetaildata.status !== "正常完工"
+  //   ) {
+  //     return 1;
+  //   }
+  //   if (
+  //     a.mes_workorderdetaildata.status !== "正常完工" &&
+  //     b.mes_workorderdetaildata.status === "正常完工"
+  //   ) {
+  //     return -1;
+  //   }
+  //   return 0;
+  // })
+
+  CKDListWithObjects.value = CKDList.value
+    .slice(0, workDetailList.value.length)
+    .map((ckd, index) => {
+      return {
+        CKD: ckd,
+        anotherObject: workDetailList.value[index],
+      };
     });
 }
 //点击项目号获取当前项目进度
@@ -135,6 +253,7 @@ async function showProgress(item: any) {
   workTypeList.value = data.data;
   workProject.value = item;
   workType.value = workTypeList.value[0].typename;
+
   tab2.value = 0;
   getWorkDetail();
 }
@@ -346,27 +465,32 @@ async function endTask() {
                   >
                     <v-expansion-panels>
                       <v-expansion-panel
-                        v-for="(element, index) in workDetailList"
+                        v-for="(element, index) in CKDListWithObjects"
                         :key="index"
-                        @click="getProductList(element)"
-                        v-if="workDetailList.length"
+                        @click="getProductList(element.anotherObject)"
+                        v-if="CKDListWithObjects.length"
                       >
                         <v-expansion-panel-title>
                           <!-- 工单明细编号 -->
                           <div style="flex-basis: 22%">
                             工单明细编号：
-                            {{ element.mes_workorderdetaildata.workorder_did }}
+                            {{
+                              element.anotherObject.mes_workorderdetaildata
+                                .workorder_did
+                            }}
                           </div>
                           <!-- 产出料 -->
                           <div style="flex-basis: 30%">
                             <div>
                               产出料：{{
-                                element.mes_workorderdetaildata.mdescription
+                                element.anotherObject.mes_workorderdetaildata
+                                  .mdescription
                               }}
                             </div>
                             <div class="mt-2">
                               图纸号：{{
-                                element.mes_workorderdetaildata.mcode
+                                element.anotherObject.mes_workorderdetaildata
+                                  .mcode
                               }}
                             </div>
                           </div>
@@ -375,62 +499,65 @@ async function endTask() {
                           <div style="flex-basis: 13%">
                             计划数量：
                             {{
-                              element.mes_workorderdetaildata.planned_quantity
+                              element.anotherObject.mes_workorderdetaildata
+                                .planned_quantity
                             }}
                           </div>
                           <!-- 计划交付日期 -->
                           <div
                             style="flex-basis: 15%"
                             v-if="
-                              element.reported_quantity >=
-                              element.planned_total_quantity
+                              element.anotherObject.reported_quantity >=
+                              element.anotherObject.planned_total_quantity
                             "
                           >
                             计划交付：
                             <span>
                               {{
-                                element.mes_workorderdetaildata
+                                element.anotherObject.mes_workorderdetaildata
                                   .estimated_delivery_date
                               }}
                             </span>
                           </div>
                           <div v-else style="flex-basis: 15%">
                             计划交付：
-                            <span
+                            <!-- <span
                               :style="{
                                 backgroundColor:
                                   new Date(
-                                    element.mes_workorderdetaildata.estimated_delivery_date
+                                    element.anotherObject.mes_workorderdetaildata.estimated_delivery_date
                                   ) < new Date()
                                     ? 'red'
                                     : '',
                                 color:
                                   new Date(
-                                    element.mes_workorderdetaildata.estimated_delivery_date
+                                    element.anotherObject.mes_workorderdetaildata.estimated_delivery_date
                                   ) < new Date()
                                     ? 'white'
                                     : '',
                               }"
-                            >
-                              {{
-                                element.mes_workorderdetaildata
-                                  .estimated_delivery_date
-                              }}
-                            </span>
+                            > -->
+                            {{
+                              element.anotherObject.mes_workorderdetaildata
+                                .estimated_delivery_date
+                            }}
+                            <!-- </span> -->
                           </div>
                           <!-- 进度 -->
                           <div style="flex-basis: 15%">
                             当前进度:
                             <v-progress-circular
                               :model-value="
-                                element.planned_total_quantity === 0
+                                element.anotherObject.planned_total_quantity ===
+                                0
                                   ? '0%'
-                                  : element.reported_quantity >
-                                    element.planned_total_quantity
+                                  : element.anotherObject.reported_quantity >
+                                    element.anotherObject.planned_total_quantity
                                   ? '100%'
                                   : Math.round(
-                                      (element.reported_quantity /
-                                        element.planned_total_quantity) *
+                                      (element.anotherObject.reported_quantity /
+                                        element.anotherObject
+                                          .planned_total_quantity) *
                                         100
                                     ) + '%'
                               "
@@ -439,14 +566,18 @@ async function endTask() {
                             >
                               <span style="font-size: 12px">
                                 {{
-                                  element.planned_total_quantity === 0
+                                  element.anotherObject
+                                    .planned_total_quantity === 0
                                     ? 0 + "%"
-                                    : element.reported_quantity >
-                                      element.planned_total_quantity
+                                    : element.anotherObject.reported_quantity >
+                                      element.anotherObject
+                                        .planned_total_quantity
                                     ? "100%"
                                     : Math.round(
-                                        (element.reported_quantity /
-                                          element.planned_total_quantity) *
+                                        (element.anotherObject
+                                          .reported_quantity /
+                                          element.anotherObject
+                                            .planned_total_quantity) *
                                           100
                                       ) + "%"
                                 }}</span
@@ -454,16 +585,17 @@ async function endTask() {
                             </v-progress-circular>
                           </div>
                           <!-- 打印 -->
-                          <div class="mr-5">
+                          <!-- <div class="mr-5">
                             <v-btn
                               color="blue-darken-2"
                               variant="outlined"
                               size="default"
                               rounded="circle"
-                              @click.stop="printWorkOrder(element)"
+                              @click.stop="printWorkOrder(element.anotherObject)"
                               >打印</v-btn
                             >
-                          </div>
+                          </div> -->
+                          <div>物料出库单号：{{ element.CKD }}</div>
                         </v-expansion-panel-title>
 
                         <v-expansion-panel-text>
@@ -536,13 +668,13 @@ async function endTask() {
                                     :style="{
                                       backgroundColor:
                                         new Date(
-                                          element.mes_workorderdetaildata.estimated_delivery_date
+                                          element.anotherObject.mes_workorderdetaildata.estimated_delivery_date
                                         ) < new Date()
                                           ? 'red'
                                           : '',
                                       color:
                                         new Date(
-                                          element.mes_workorderdetaildata.estimated_delivery_date
+                                          element.anotherObject.mes_workorderdetaildata.estimated_delivery_date
                                         ) < new Date()
                                           ? 'white'
                                           : '',

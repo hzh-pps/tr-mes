@@ -49,6 +49,13 @@ let headers = ref<any[]>([
     filterable: true,
   },
   {
+    title: "库位号",
+    align: "center",
+    key: "place_code",
+    sortable: false,
+    filterable: true,
+  },
+  {
     title: "派工单号",
     align: "center",
     key: "source_order",
@@ -342,6 +349,8 @@ function exportToExcel() {
                   ? "可用"
                   : item.raw.state === "B"
                   ? "加工中"
+                  : item.raw.state === "D"
+                  ? "待入库"
                   : "待质检"
               }}
             </template>
