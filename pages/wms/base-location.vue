@@ -180,6 +180,7 @@ function resetFilter() {
 }
 //控制弹出框
 let addDialog = ref<boolean>(false);
+let addDialog2 = ref<boolean>(false);
 let editDialog = ref<boolean>(false);
 let delDialog = ref<boolean>(false);
 //库位对象
@@ -228,6 +229,9 @@ function showAddDialog() {
 
   addDialog.value = true;
 }
+const placeCode = ref<string>("");
+const warehouse = ref<string>("Z");
+
 //点击写入名称
 function importName() {
   stationInfo.value.place_desc =
@@ -278,6 +282,38 @@ async function addSation() {
     setSnackbar("blue", "新增成功");
     getWareHouseDate();
     addDialog.value = false;
+  } else {
+    return setSnackbar("black", "新增失败");
+  }
+}
+let num = 1; // 初始值为1
+
+async function showAddDialog2() {
+  let formattedNum = num.toString().padStart(3, "0"); // 将数字格式化为固定长度的字符串
+  placeCode.value = "D-" + formattedNum;
+  num++; // 递增 num 的值
+  const data: any = await useHttp("/wmsPlace/G102newone", "post", {
+    place_code: placeCode.value,
+    warehouse: warehouse.value,
+  });
+  if (data.code === 200) {
+    setSnackbar("blue", "新增成功");
+    getWareHouseDate();
+    addDialog2.value = false;
+  } else {
+    return setSnackbar("black", "新增失败");
+  }
+}
+//确认新增临时库位
+async function addSation2() {
+  const data: any = await useHttp("/wmsPlace/G102newone", "post", {
+    place_code: placeCode.value,
+    warehouse: warehouse.value,
+  });
+  if (data.code === 200) {
+    setSnackbar("blue", "新增成功");
+    getWareHouseDate();
+    addDialog2.value = false;
   } else {
     return setSnackbar("black", "新增失败");
   }
@@ -351,11 +387,11 @@ let dataCode = ref<any[]>([]);
 //打印出二维码
 function printCode() {
   if (!selected.value.length) {
-    return setSnackbar("black", "请您选择需要打印的派工单");
+    return setSnackbar("black", "请您选择需要打印的库位号");
   }
   selected.value.map((item: any) =>
     dataCode.value.push({
-      value: item.place_code,
+      value: "CK-" + item.place_code,
     })
   );
   nextTick(() => {
@@ -442,7 +478,7 @@ function printCode() {
         v-model="searchWarehouse"
         variant="outlined"
         density="compact"
-        :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
+        :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
         hide-details
         class="mt-2"
       ></v-select>
@@ -501,6 +537,15 @@ function printCode() {
       >
         新增库位
       </v-btn>
+      <!-- <v-btn
+        color="blue-darken-2"
+        class="mr-2 mt-2"
+        size="default"
+        @click="showAddDialog2"
+        v-permission="`${router.currentRoute.value.fullPath}->addLocation`"
+      >
+        新增临时库位
+      </v-btn> -->
       <v-btn
         color="blue-darken-2"
         class="mr-2 mt-2"
@@ -591,7 +636,7 @@ function printCode() {
               <v-select
                 label="仓库号"
                 v-model="stationInfo.warehouse"
-                :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
+                :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
                 hide-details
               ></v-select>
             </v-col>
@@ -678,6 +723,42 @@ function printCode() {
         </div>
       </v-card>
     </v-dialog>
+    <!-- 新增库位 -->
+    <v-dialog v-model="addDialog2" min-width="400px" width="560px">
+      <v-card>
+        <v-toolbar color="blue">
+          <v-toolbar-title> 新增库位 </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn icon @click="addDialog2 = false">
+            <v-icon>fa-solid fa-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="mt-4">
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                label="库位号"
+                v-model="placeCode"
+                hide-details
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <div class="d-flex justify-end mr-6 mb-4">
+          <v-btn
+            color="blue-darken-2"
+            size="large"
+            class="mr-2"
+            @click="addSation2()"
+          >
+            确认
+          </v-btn>
+          <v-btn color="grey" size="large" @click="addDialog2 = false">
+            取消
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
     <!-- 修改库位 -->
     <v-dialog v-model="editDialog" min-width="400px" width="560px">
       <v-card>
@@ -711,7 +792,7 @@ function printCode() {
               <v-select
                 label="仓库号"
                 v-model="stationInfo.warehouse"
-                :items="['A', 'B', 'C', 'D', 'E', 'F','S', 'Z']"
+                :items="['A', 'B', 'C', 'D', 'E', 'F', 'S', 'Z']"
                 clearable
                 hide-details
               ></v-select>
