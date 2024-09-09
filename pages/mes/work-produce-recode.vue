@@ -1707,7 +1707,7 @@ function assign() {
                         料号/图纸号：{{ item.mcode }}
                       </div>
                     </div>
-                    <hr />
+                    <hr style="border: 1px dashed black; width: 100%" />
                     <!--派工单二维码页面  -->
                     <div v-for="(item_, index_) in item.children" :key="index_">
                       <div style="display: flex" class="mt-1">
