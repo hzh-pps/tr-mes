@@ -719,6 +719,17 @@ function buildTree(parents: any, children: any) {
   });
   return tree;
 }
+// 明细勾选
+let selected2 = ref<any[]>([]);
+async function printDetail2() {
+  console.log(selected2.value);
+  await printJS({
+    printable: "printContent3",
+    type: "html",
+    targetStyles: ["*"],
+  });
+  selected2.value = [];
+}
 </script>
 <template>
   <!-- 遮罩层 -->
@@ -939,6 +950,91 @@ function buildTree(parents: any, children: any) {
               </div>
             </div>
           </v-col>
+          <!-- 打印明细 -->
+          <v-col cols="12" v-show="false">
+            <div id="printContent3">
+              <!--明细页面  -->
+              <div v-for="(item_, index_) in selected2" :key="index_">
+                <div style="display: flex" class="mt-3">
+                  <div
+                    style="padding-right: 5px; flex-basis: 12%"
+                    v-if="index_ % 2 === 0"
+                  >
+                    <qrcode-vue
+                      style="width: 70px; height: 70px"
+                      :value="item_.dispatch_order"
+                    ></qrcode-vue>
+                  </div>
+                  <div
+                    style="
+                      font-family: 'SongTi';
+                      flex-basis: 15%;
+                      align-self: center;
+                      font-size: 12px;
+                    "
+                  >
+                    {{ item_.dispatch_order }}
+                  </div>
+
+                  <div
+                    style="
+                      font-family: 'SongTi';
+                      flex-basis: 25%;
+                      align-self: center;
+                      font-weight: bold;
+                      font-size: 12px;
+                    "
+                  >
+                    {{ item_.material_name }}
+                  </div>
+
+                  <div
+                    style="
+                      font-family: 'SongTi';
+                      flex-basis: 8%;
+                      align-self: center;
+                      font-weight: bold;
+                      font-size: 12px;
+                    "
+                  >
+                    {{ item_.outsourced_quantity }}{{ item_.unit }}
+                  </div>
+                  <div
+                    style="
+                      font-family: 'SongTi';
+                      flex-basis: 50%;
+                      align-self: center;
+                      font-size: 12px;
+                    "
+                  >
+                    <span style="font-weight: bold">
+                      {{ item_.material_id }}
+                    </span>
+                  </div>
+                  <!-- <div
+                      style="
+                        font-family: 'SongTi';
+                        flex-basis: 10%;
+                        align-self: center;
+                      "
+                    >
+                      项目号:
+                      {{ item_.project_code }}
+                    </div> -->
+                  <div
+                    style="padding-right: 5px; flex-basis: 12%"
+                    v-if="index_ % 2 !== 0"
+                  >
+                    <qrcode-vue
+                      style="width: 70px; height: 70px"
+                      :value="item_.dispatch_order"
+                    ></qrcode-vue>
+                  </div>
+                </div>
+                <hr />
+              </div>
+            </div>
+          </v-col>
           <v-col cols="12">
             <v-data-table
               hover
@@ -1053,10 +1149,21 @@ function buildTree(parents: any, children: any) {
             >
               新增明细
             </v-btn>
+            <v-btn
+              color="blue-darken-2"
+              class="mr-2 mt-2"
+              size="default"
+              @click="printDetail2"
+            >
+              打印明细
+            </v-btn>
           </v-col>
           <v-col cols="12">
             <v-data-table
               hover
+              show-select
+              v-model="selected2"
+              return-object
               :items-per-page="10"
               :headers="headers"
               :items="outSourceList"
