@@ -16,6 +16,9 @@ useSeoMeta({
 definePageMeta({
   keepalive: true,
 });
+// 获取消息条对象
+const { snackbarShow, snackbarColor, snackbarText, setSnackbar } =
+  useSnackbar();
 //搜索
 let searchCtnId = ref<any>(null);
 let searchPlaceId = ref<any>(null);
@@ -77,12 +80,13 @@ let headers = ref<any[]>([
     filterable: true,
   },
   {
-    title: "工序",
+    title: "项目号",
     align: "center",
-    key: "reserved02",
+    key: "reserved03",
     sortable: false,
     filterable: true,
   },
+
   {
     title: "库存数量",
     align: "center",
@@ -112,38 +116,36 @@ let headers = ref<any[]>([
     sortable: false,
     filterable: true,
   },
-
   {
-    title: "项目号",
+    title: "工序",
     align: "center",
-    key: "reserved03",
+    key: "reserved02",
     sortable: false,
     filterable: true,
   },
 ]);
+// 勾选的数据
+let selected = ref<any[]>([]);
 //存储数据库数据
 let inventoryList = ref<any[]>([]);
+//库存数量
+let inventoryNum = ref<number>(0);
 //获取数据库数据
 async function getInventoryData() {
-  const data: any = await useHttp(
-    "/wmsInventory/G115condition_query",
-    "post",
-
-    {
-      container_id: searchCtnId.value,
-      place_code: searchPlaceId.value,
-      warehouse_code: tab.value,
-      area_code: "00",
-      sku: searchMaterial.value,
-      sku_desc: searchMaterialDesc.value,
-      indateTo: searchInDateTo.value,
-      indateFrom: searchInDateFrom.value,
-      reserved03: searchProject.value,
-      source_order: searchReserve.value,
-      sku_spec: searchSkuSpec.value,
-      flag_void: "N",
-    }
-  );
+  const data: any = await useHttp("/wmsInventory/G115condition_query", "post", {
+    container_id: searchCtnId.value,
+    place_code: searchPlaceId.value,
+    warehouse_code: tab.value,
+    area_code: "00",
+    sku: searchMaterial.value,
+    sku_desc: searchMaterialDesc.value,
+    indateTo: searchInDateTo.value,
+    indateFrom: searchInDateFrom.value,
+    reserved03: searchProject.value,
+    source_order: searchReserve.value,
+    sku_spec: searchSkuSpec.value,
+    flag_void: "N",
+  });
   inventoryList.value = data.data
     .sort((a: any, b: any) => {
       if (a.reserved01 < b.reserved01 && a.time_in < b.time_in) {
@@ -170,6 +172,9 @@ async function getInventoryData() {
         return item;
       }
     });
+  inventoryNum.value = inventoryList.value.reduce((total, item) => {
+    return total + item.qty;
+  }, 0);
 }
 onMounted(() => {
   getInventoryData();
@@ -191,6 +196,7 @@ function resetFilter() {
   searchProject.value = "";
   searchReserve.value = "";
   searchSkuSpec.value = "";
+  selected.value = [];
   getInventoryData();
 }
 
@@ -225,6 +231,23 @@ function exportToExcel() {
   XLSX.utils.book_append_sheet(wb, ws, "当天入库统计");
   const date = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, date + "入库统计.xlsx");
+}
+// 二维码实例
+const qrCodeIns = ref<any>(null);
+let dataCode = ref<any[]>([]);
+//打印出二维码
+function print() {
+  if (!selected.value.length) {
+    return setSnackbar("black", "请您选择需要打印的库位号");
+  }
+  selected.value.map((item: any) =>
+    dataCode.value.push({
+      value: item.source_order,
+    })
+  );
+  nextTick(() => {
+    qrCodeIns.value.printQrCode();
+  });
 }
 </script>
 <template>
@@ -307,7 +330,7 @@ function exportToExcel() {
             type="date"
           ></v-text-field>
         </v-col>
-        <v-col cols="12">
+        <v-col cols="8">
           <v-btn
             color="blue-darken-2"
             class="mr-2 mt-2"
@@ -330,12 +353,34 @@ function exportToExcel() {
           >
             导出Excel
           </v-btn>
+          <v-btn color="red" class="mr-2 mt-2" size="default" @click="print"
+            >打印</v-btn
+          >
+          <VQRCode2 :data="dataCode" ref="qrCodeIns"></VQRCode2>
         </v-col>
+        <v-col cols="4">
+          <div class="d-flex justify-space-around">
+            <div class="font-weight-black">
+              库存种类：<span class="font-weight-bold text-h5">{{
+                inventoryList.length
+              }}</span>
+            </div>
+
+            <div class="font-weight-black">
+              库存数量：<span class="font-weight-bold text-h5">{{
+                inventoryNum
+              }}</span>
+            </div>
+          </div></v-col
+        >
         <v-col cols="12">
           <v-data-table
             hover
             :items-per-page="10"
             :headers="headers"
+            v-model="selected"
+            show-select
+            return-object
             :items="inventoryList"
             style="overflow-x: auto; white-space: nowrap"
             fixed-footer
@@ -359,5 +404,11 @@ function exportToExcel() {
       </v-row>
     </v-tabs-window-item>
   </v-tabs-window>
+  <v-snackbar location="top" v-model="snackbarShow" :color="snackbarColor">
+    {{ snackbarText }}
+    <template v-slot:actions>
+      <v-btn variant="tonal" @click="snackbarShow = false">关闭</v-btn>
+    </template>
+  </v-snackbar>
 </template>
 <style scoped></style>

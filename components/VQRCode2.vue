@@ -25,7 +25,7 @@ function printQrCode() {
         <img src="${image1.src}" style="height: 100px" />
     </div>
     <div style="font-size:18px; margin-top:5px">
-        库位号:
+        
         <span style="font-family: 'SongTi';margin-right:9px">
             ${item.value}
         </span>

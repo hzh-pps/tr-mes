@@ -123,11 +123,98 @@ async function getHourDate() {
       end_time: searchEndTime.value,
     }
   );
-  hourList.value = data.data.sort((a: any, b: any) => {
-    const aId = parseInt(a.record_id.substring(3));
-    const bId = parseInt(b.record_id.substring(3));
-    return bId - aId;
+  hourList.value = sliceDate(data.data);
+  hourList.value = hourList.value
+    .sort((a: any, b: any) => {
+      const aId = parseInt(a.record_id.substring(3));
+      const bId = parseInt(b.record_id.substring(3));
+      return bId - aId;
+    })
+    .filter((item: any) => {
+      return (
+        item.work_center_name !== "委外表面处理1" &&
+        item.work_center_name !== "纯图纸委外" // 过滤掉外协的工时
+      );
+    });
+}
+// 该方法是为了校验工作时间段是否包含休息时间，将其减去对应的休息时间
+function sliceDate(arr: any[]) {
+  return arr.map((item: any) => {
+    const [startTimeStr, endTimeStr] = item.temporal_interval
+      .split("—")
+      .map((str: any) => str.trim());
+    const date1: any = parseTime(startTimeStr);
+    const date2: any = parseTime(endTimeStr);
+
+    // 检查日期部分是否相同
+    if (date1.toDateString() !== date2.toDateString()) {
+      // 计算相差的天数
+      const timeDiff = Math.abs(date2 - date1);
+      const diffDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+      // 计算需要减去的总小时数
+      const totalHoursToSubtract = diffDays * 11.5;
+
+      // 减去总小时数
+      item.work_time -= totalHoursToSubtract;
+      // 对工时进行四舍五入或者限制小数位数
+      item.work_time = Math.round(item.work_time * 100) / 100; // 四舍五入保留两位小数
+      return { ...item, work_time: item.work_time }; // 返回更新后的对象
+    }
+    // 检查时间范围
+    const startRange1 = new Date(
+      date1.getFullYear(),
+      date1.getMonth(),
+      date1.getDate(),
+      12,
+      0,
+      0
+    );
+    const endRange1 = new Date(
+      date1.getFullYear(),
+      date1.getMonth(),
+      date1.getDate(),
+      13,
+      0,
+      0
+    );
+    const startRange2 = new Date(
+      date1.getFullYear(),
+      date1.getMonth(),
+      date1.getDate(),
+      17,
+      30,
+      0
+    );
+    const endRange2 = new Date(
+      date1.getFullYear(),
+      date1.getMonth(),
+      date1.getDate(),
+      18,
+      0,
+      0
+    );
+    let workTime = item.work_time;
+    // 当这段工时里面包含12点-13点时减去1个小时
+    if (date1 <= startRange1 && date2 >= endRange1) {
+      workTime -= 1;
+    }
+    // 当工时包含17:30-18::00时减去0.5小时
+    if (date1 <= startRange2 && date2 >= endRange2) {
+      workTime -= 0.5;
+    }
+    // 对工时进行四舍五入或者限制小数位数
+    workTime = Math.round(workTime * 100) / 100; // 四舍五入保留两位小数
+    return { ...item, work_time: workTime }; // 返回更新后的对象
   });
+}
+
+function parseTime(timeStr?: any) {
+  const [dateStr, time] = timeStr.split(" ");
+  const [year, month, day] = dateStr.split("/").map(Number);
+  const [hour, minute, second] = time.split(":").map(Number);
+
+  return new Date(year, month - 1, day, hour, minute, second);
 }
 // 导出数据
 function exportToExcel() {
@@ -193,9 +280,14 @@ function addHour() {
   hour.value /= 100;
 }
 let expanded = ref<any>(null);
+const startTimeStr = ref();
+const endTimeStr = ref();
 function showDetail(item: any, obj: any) {
   expanded.value = obj.item.raw;
   showDetailDialog.value = true;
+  [startTimeStr.value, endTimeStr.value] = expanded.value.temporal_interval
+    .split("—")
+    .map((str: any) => str.trim());
 }
 </script>
 <template>
@@ -400,7 +492,7 @@ function showDetail(item: any, obj: any) {
                 <div class="d-flex flex-column">
                   <div>状态：结束</div>
                   <div>员工姓名: {{ expanded.employee_name }}</div>
-                  <div>时间: {{ expanded.temporal_interval.slice(-18) }}</div>
+                  <div>时间: {{ endTimeStr }}</div>
                 </div>
               </v-stepper-item>
             </v-stepper-header>
